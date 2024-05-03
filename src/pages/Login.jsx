@@ -159,7 +159,7 @@
 import { useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router";
 import handleApiCall from "../services/HandleAPiCall";
-import { Typography, TextField, Button, Snackbar, CircularProgress } from "@mui/material";
+import { Typography, TextField, Button, Snackbar, CircularProgress,  InputAdornment,IconButton } from "@mui/material";
 import MuiAlert from '@mui/material/Alert';
 import CssBaseline from '@mui/material/CssBaseline';
 import Paper from '@mui/material/Paper';
@@ -167,6 +167,9 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Image from "../assets/ServAll.png";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { RotatingLines } from "react-loader-spinner";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -179,6 +182,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleOnChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -195,6 +199,7 @@ const Login = () => {
     handleApiCall({
       data: formData,
       cb: (data, status) => {
+      
         if (status === 200) {
           console.log("DATA COMING", data);
           localStorage.setItem("token", data.token);
@@ -209,7 +214,7 @@ const Login = () => {
         }
       },
       setLoading,
-      onError: (error) => handleApiError("Failed to connect to the server."),
+      onError: () => handleApiError("Failed to connect to the server."),
     });
   };
 
@@ -228,80 +233,128 @@ const Login = () => {
 
   return (
     <ThemeProvider theme={defaultTheme}>
-      <Grid container component="main" sx={{ height: '100vh' }}>
-        <CssBaseline />
-        <Grid
-          item
-          xs={false}
-          sm={4}
-          md={7}
-          sx={{
-            backgroundImage: 'url(https://servall.be/wp-content/uploads/2023/11/1-28.png)',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: (t) =>
-              t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-            backgroundSize: 'contain',
-            backgroundPosition: 'center',
-          }}
+<Grid container component="main" sx={{ height: '100vh' }}>
+  <CssBaseline />
+  <Grid
+    item
+    xs={false}
+    sm={6}
+    md={7}
+    sx={{
+      backgroundImage: 'url(https://servall.be/wp-content/uploads/2023/11/1-28.png)',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: (t) =>
+        t.palette.mode === 'dark' ? t.palette.grey[50] : t.palette.grey[900],
+      backgroundSize: { sm: 'cover', md: 'contain' },
+      backgroundPosition: 'center',
+    }}
+  />
+  <Grid item xs={12} sm={6} md={5} component={Paper} elevation={6} square>
+    <Box
+      sx={{
+        my: 8,
+        mx: 4,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '50%',
+      }}
+    >
+      <Typography component="h1" variant="h5" sx={{ marginBottom: 2, fontWeight: 'bold' }}>
+Welcome To
+</Typography>
+
+      <Box
+        component="img"
+        sx={{
+          height: 100,
+          width: 200,
+          maxHeight: { xs: 333, md: 167 },
+          maxWidth: { xs: 350, md: 250 },
+          marginBottom: 4,
+        }}
+        alt="ServAll Logo"
+        src={Image}
+      />
+    
+      <Box component="form" noValidate onSubmit={handleSubmit} sx={{ width: '80%' }}>
+        <TextField
+          id="userName"
+          label="Email"
+          variant="outlined"
+          fullWidth
+          value={formData.userName}
+          onChange={(e) => handleOnChange(e)}
+          sx={{ marginBottom: 2 }}
         />
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-          <Box
-            sx={{
-              my: 8,
-              mx: 4,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <Box
-              component="img"
-              sx={{
-                height: 100,
-                width: 200,
-                maxHeight: { xs: 233, md: 167 },
-                maxWidth: { xs: 350, md: 250 },
-              }}
-              alt="The house from the offer."
-              src={Image}
-            />
-            <Typography component="h1" variant="h5">
-              Sign in
-            </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
-              <TextField
-                id="userName"
-                label="Email"
-                variant="outlined"
-                fullWidth
-                value={formData.userName}
-                onChange={(e) => handleOnChange(e)}
-                style={{ marginBottom: "20px" }}
-              />
-              <TextField
-                id="password"
-                label="Password"
-                type="password"
-                variant="outlined"
-                fullWidth
-                value={formData.password}
-                onChange={(e) => handleOnChange(e)}
-                style={{ marginBottom: "20px" }}
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleSubmit}
-                style={{ padding: "8px 20px", fontSize: "16px", position: 'relative' }}
-                disabled={loading}
-              >
-                {loading && <CircularProgress size={24} style={{ position: 'absolute', top: '50%', left: '50%', marginTop: '-12px', marginLeft: '-12px' }} />}
-                {!loading && 'Login'}
-              </Button>
-            </Box>
-          </Box>
-        </Grid>
-      </Grid>
+           <TextField
+          id="password"
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          variant="outlined"
+          fullWidth
+          value={formData.password}
+          onChange={(e) => handleOnChange(e)}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{ marginBottom: 2 }}
+        />
+        <Box sx={{ display: 'flex', justifyContent: { sm: 'center', md: 'flex-end' },}}>
+          {!loading && (
+          <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={loading}
+          sx={{
+              padding: "8px 20px",
+              fontSize: "16px",
+              backgroundColor: "#228B22",
+              position: 'relative',
+              overflow: 'hidden', 
+              marginRight: 1,
+              boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", 
+              '&:hover': {
+                  backgroundColor: "#228B22", 
+                  boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.2)",
+              }
+          }}
+      >
+          Login
+      </Button>
+      
+          )}
+          {loading && (
+               <RotatingLines
+               visible={true}
+               height="50"
+               width="50"
+               color="#4fa94d"
+               ariaLabel="grid-loading"
+               radius="12.5"
+               
+               wrapperStyle={{}}
+               wrapperClass="grid-wrapper"
+               />
+         
+          )}
+        </Box>
+      </Box>
+    </Box>
+  </Grid>
+</Grid>
+
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}

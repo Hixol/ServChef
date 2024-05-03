@@ -16,10 +16,8 @@ const handleApiCall = ({ data, cb, setLoading }) => {
   };
 
   async function handelCall() {
-    // loading start
     setLoading(true);
     try {
-      // axios call
       const response = await axios({
         method: "POST",
         url,
@@ -30,20 +28,18 @@ const handleApiCall = ({ data, cb, setLoading }) => {
       });
 
       setLoading(false);
-      // if success
+
       return cb(response.data, response.status);
-      // if we have error
     } catch (error) {
-      // loading false
       setLoading(false);
-      //   pass error to the callback
+
       cb(error, error.message);
-      //   console.log error
+
       console.log(error.response?.data?.message);
       throw error;
     }
   }
-  //   return function that we can call it
+
   return handelCall();
 };
 
