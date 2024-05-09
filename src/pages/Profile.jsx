@@ -10,23 +10,30 @@ import {
   Box,
   Toolbar,
   IconButton,
-
+  CardContent,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { RotatingLines } from "react-loader-spinner";
 import { styled } from "@mui/system";
+import Image from "../assets/ServAll.png"
 import SocketService from "../helpers/socket";
 import SOUNDFILE from "../assets/notification.wav";
 import ChefService from "../services/ChefService";
 import { Logout } from "@mui/icons-material";
 import LocationService from "../services/LocationService";
 import LoginService from "../services/LoginService";
+import PlacedOrders from "./PlacedComponent";
+import InProgressOrders from "./InProgressComponent";
+import CompletedOrders from "./CompletedComponent";
 
 const Container = styled(Box)(() => ({
-  borderRadius: "10px",
+  // borderRadius: "10px",
 
-  cursor: "pointer",
-  overflow: "hidden",
-  border: "1px solid #CED4DA",
+  padding: "8px",
+  // cursor: "pointer",
+  // overflow: "hidden",
+  // border: "1px solid #CED4DA",
 }));
 
 const RightAlignedBox = styled(Box)({
@@ -45,7 +52,10 @@ const Profile = () => {
   const [orders, setOrders] = useState([]);
   const [location, setLocation] = useState([]);
   const [role, setRole] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false); 
 
   const navigate = useNavigate();
   const notificationAudio = new Audio(SOUNDFILE);
@@ -73,8 +83,7 @@ const Profile = () => {
     //   if (data) {
     //     SocketService.emit("get_order_detail", { order_id: data.order_id });
     //   }
-      
-      
+
     // });
     // SocketService.on("order", async(data) => {
     //   console.log("ORDER UPDATE", data);
@@ -96,6 +105,11 @@ const Profile = () => {
     fetchData();
   }, []);
 
+  const handleSnackbarOpen = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
   const fetchLocation = async () => {
     let location = LocationService.getLocation();
 
@@ -106,6 +120,8 @@ const Profile = () => {
     console.log("ROLE", role);
     setRole(role);
   };
+  let newRole = localStorage.getItem("staff_role_name");
+  console.log("ROLECOMINGTODAY",role);
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
@@ -114,12 +130,12 @@ const Profile = () => {
         const formattedOrders = response.rows.map((row) => ({
           id: row.order_id,
           order_date: row.order_date,
-          table_name: row.Table?.table_name,
-          location_name: row.Location.name,
+          table_name: row.Table ? row.Table.table_name : null,
+          location_name: row.Location ? row.Location.name : null,
           order_total: row.order_total,
           order_tax: row.order_tax,
           order_time: row.order_time,
-          status: row.order_status,
+          status: row.PrinterStatus ? row.PrinterStatus[newRole] : null,
           items: row.OrderMenus.map((menu) => ({
             name: menu.name,
             quantity: menu.quantity,
@@ -141,18 +157,52 @@ const Profile = () => {
             })),
           })),
         }));
-  
-        const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
+        
+        // const formattedOrders = response.rows.map((row) => ({
+        //   id: row.order_id,
+        //   order_date: row.order_date,
+        //   table_name: row.Table?.table_name,
+        //   location_name: row.Location.name,
+        //   order_total: row.order_total,
+        //   order_tax: row.order_tax,
+        //   order_time: row.order_time,
+        //   status: row.PrinterStatus[newRole],
+        //   items: row.OrderMenus.map((menu) => ({
+        //     name: menu.name,
+        //     quantity: menu.quantity,
+        //     price: menu.price,
+        //     subtotal: menu.subtotal,
+        //     options: menu.option_values,
+        //     comment: menu.comment,
+        //     orderOptions: menu.OrderOptions.map((option) => ({
+        //       order_option_id: option.order_option_id,
+        //       order_option_name: option.order_option_name,
+        //       order_option_price: option.order_option_price,
+        //       quantity: option.quantity,
+        //       display_type: option.display_type,
+        //       order_item_tax: option.order_item_tax,
+        //       order_item_tax_percentage: option.order_item_tax_percentage,
+        //       menu_option_type: option.menu_option_type,
+        //       createdAt: option.createdAt,
+        //       updatedAt: option.updatedAt,
+        //     })),
+        //   })),
+        // }));
+        console.log(formattedOrders);
+
+        const oldOrdersCount =
+          JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
-        if(oldOrdersCount !== 0 ){
+        if (oldOrdersCount !== 0) {
           if (newOrdersCount > oldOrdersCount) {
+            handleSnackbarOpen("New order received!");
             notificationAudio.play();
             localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
           }
-        }else{
+        } else {
           localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
         }
-  
+
         setOrders(formattedOrders);
       }
     } catch (error) {
@@ -161,36 +211,30 @@ const Profile = () => {
       setIsLoading(false);
     }
   };
-  
-  
-
-  
-
-
 
   const onDragEnd = async (result) => {
     console.log("Drag result:", result);
 
-    
     if (!result.destination) {
       return;
     }
-
-    // Update the status of the order in the database
+    setIsUpdating(true); // Start updating
     try {
       await ChefService.updateOrderStatus(
         location,
-
+newRole,
         result.draggableId,
         result.destination.droppableId
       );
-      
-      fetchData();
-    } catch (error) {
-      console.error("Error updating order status:", error);
-    }
 
-    // Update the state to reflect the changes
+      fetchData();
+    }catch (error) {
+      console.error("Error updating order status:", error);
+    } finally {
+      setIsUpdating(false); // Stop updating
+    }
+    
+
     setOrders((prevOrders) => {
       const updatedOrders = [...prevOrders];
       const index = updatedOrders.findIndex(
@@ -205,6 +249,7 @@ const Profile = () => {
     <>
       <AppBar position="sticky">
         <Toolbar>
+          
           <LeftAlignedBox>
             <WelcomeMessage variant="h5" color="inherit">
               Welcome: {role}
@@ -225,474 +270,68 @@ const Profile = () => {
           </RightAlignedBox>
         </Toolbar>
       </AppBar>
-      {isLoading ? ( 
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "25rem" }}>
-    <RotatingLines
-  visible={true}
-  height="80"
-  width="80"
-  color="#4fa94d"
-  ariaLabel="grid-loading"
-  radius="12.5"
-  wrapperStyle={{}}
-  wrapperClass="grid-wrapper"
-  />
+      {isLoading || isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "25rem",
+          }}
+        >
+          <RotatingLines
+            visible={true}
+            height="80"
+            width="80"
+            color="#4fa94d"
+            ariaLabel="grid-loading"
+            radius="12.5"
+            wrapperStyle={{}}
+            wrapperClass="grid-wrapper"
+          />
         </div>
       ) : (
-      <Container>
-        <br></br>
+        <Container>
+          <br></br>
 
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Grid container justifyContent="center" spacing={2} className="mt-2">
-            <Droppable droppableId="placed">
-              {(provided) => (
-                <Grid item sm={4} md={3} style={{ padding: "8px" }}>
-                  <Card style={{ padding: "12px", borderRadius: "10px" }}>
-                    <Typography
-                      sx={{
-                        bgcolor: "#FFD701",
-                        fontWeight: "bold",
-                        padding: "12px 0",
-                      }}
-                      variant="h5"
-                      align="center"
-                    >
-                      Placed
-                    </Typography>
-                    <div
-                     style={{ height: "200vh" }} 
-                      className="orders-container mt-2"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      {orders
-                        .filter((order) => order.status === "Placed")
-                        .map((order, index) => (
-                          <Draggable
-                            key={order.id.toString()}
-                            draggableId={order.id.toString()}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <Card
-                                  variant="outlined"
-                                  style={{
-                                
-                                    boxShadow: snapshot.isDragging
-                                      ? "0px 4px 20px rgba(0, 0, 0, 0.2)"
-                                      : "none",
-                                    backgroundColor: snapshot.isDragging
-                                      ? "#f4ffc1"
-                                      : "inherit",
-                                    marginBottom: "12px",
-                                    marginTop: "12px",
-                                    border: "1px solid black",
-                                    borderRadius: "8px",
-                                    padding: "5px",
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      background: "#FFD701",
-                                      borderRadius: "8px",
-                                      marginBottom: "12px",
-                                      padding: "12px",
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="h6"
-                                      style={{ fontWeight: "bold" }}
-                                    >
-                                      {order?.table_name}
-                                    </Typography>
-                                    <Typography variant="subtitle2">
-                                      {order.order_time}
-                                    </Typography>
-                                  </Box>
-                               
-                                  {order.items.map((item, index) => (
-                                    <>
-                                    <div
-                                      key={index}
-                                      style={{
-                                        padding: "12px 0",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          {item.name}
-                                        </Typography>
-                                      </div>
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          x{item.quantity}
-                                        </Typography>
-
-
-
-
-                                        
-                                      </div>
-                                      
-                                    </div>
-                                    <Divider />
-                                    {item?.orderOptions.map((item, index2) => (
-    <div
-        key={index2}
-        style={{
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Grid
+              container
+              justifyContent="center"
+              spacing={2}
             
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-        }}
-    >
-        <div>
-            <Typography
-                variant="subtitle1"
-           
             >
-                {item.order_option_name}
-            </Typography>
-        </div>
-        <div>
-            <Typography
-                variant="subtitle1"
-                style={{ fontWeight: "bold" }}
-            >
-                x{item.quantity}
-            </Typography>
-        </div>
-    </div>
-))}
-                                    </>
-                                  ))}
-                                  
-                                  
-                                </Card>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                      {provided.placeholder}
-                    </div>
-                  </Card>
-                </Grid>
-              )}
-            </Droppable>
-
-            <Droppable droppableId="In-progress">
-              {(provided) => (
-                <Grid item sm={4} md={3} style={{ padding: "8px" }}>
-                  <Card style={{ padding: "12px", borderRadius: "10px" }}>
-                    <Typography
-                      sx={{
-                        bgcolor: "#28C76F",
-                        fontWeight: "bold",
-                        padding: "12px 0",
-                      }}
-                      variant="h5"
-                      align="center"
-                    >
-                      In Progress
-                    </Typography>
-                    <div
-                      style={{ height: "200vh" }} 
-                      className="orders-container mt-2"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      {orders
-                        .filter((order) => order.status === "In-progress")
-                        .map((order, index) => (
-                          <Draggable
-                            key={order.id.toString()}
-                            draggableId={order.id.toString()}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <Card
-                                  variant="outlined"
-                                  style={{
-                                    boxShadow: snapshot.isDragging
-                                      ? "0px 4px 20px rgba(0, 0, 0, 0.2)"
-                                      : "none",
-                                    backgroundColor: snapshot.isDragging
-                                      ? "#d4ffc4"
-                                      : "inherit",
-                                    marginBottom: "12px",
-                                    marginTop: "12px",
-                                    border: "1px solid black",
-                                    borderRadius: "8px",
-                                    padding: "5px",
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      background: "#28C76F",
-                                      borderRadius: "8px",
-                                      marginBottom: "12px",
-                                      padding: "12px",
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="h6"
-                                      style={{ fontWeight: "bold" }}
-                                    >
-                                      {order?.table_name}
-                                    </Typography>
-                                    <Typography variant="subtitle2">
-                                      {order.order_time}
-                                    </Typography>
-                                  </Box>
-                                  
-                              
-                                    {order.items.map((item, index) => (
-                                    <>
-                                    <div
-                                      key={index}
-                                      style={{
-                                        padding: "12px 0",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          {item.name}
-                                        </Typography>
-                                      </div>
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          x{item.quantity}
-                                        </Typography>
-
-
-
-
-                                        
-                                      </div>
-                                      
-                                    </div>
-                                    <Divider />
-                                    {item?.orderOptions.map((item, index) => (
-    <div
-        key={index}
-        style={{
-            
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-        }}
-    >
-        <div>
-            <Typography
-                variant="subtitle1"
-           
-            >
-                {item.order_option_name}
-            </Typography>
-        </div>
-        <div>
-            <Typography
-                variant="subtitle1"
-                style={{ fontWeight: "bold" }}
-            >
-                x{item.quantity}
-            </Typography>
-        </div>
-    </div>
-))}
-                                    </>
-                                  ))}
-                                  
-                                  
-                                </Card>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                      {provided.placeholder}
-                    </div>
-                  </Card>
-                </Grid>
-              )}
-            </Droppable>
-            <Droppable droppableId="Completed">
-              {(provided) => (
-                <Grid item sm={4} md={3} style={{ padding: "8px" }}>
-                  <Card style={{ padding: "12px", borderRadius: "10px" }}>
-                    <Typography
-                      sx={{
-                        bgcolor: "#B8C2CC",
-                        fontWeight: "bold",
-                        padding: "12px 0",
-                      }}
-                      variant="h5"
-                      align="center"
-                    >
-                      Completed
-                    </Typography>
-                    <div
-                      style={{ height: "200vh" }} 
-                      className="orders-container mt-2"
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      {orders
-                        .filter((order) => order.status === "Completed")
-                        .map((order, index) => (
-                          <Draggable
-                            key={order.id.toString()}
-                            draggableId={order.id.toString()}
-                            index={index}
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                              >
-                                <Card
-                                  variant="outlined"
-                                  style={{
-                                    boxShadow: snapshot.isDragging
-                                      ? "0px 4px 20px rgba(0, 0, 0, 0.2)"
-                                      : "none",
-                                    backgroundColor: snapshot.isDragging
-                                      ? "#efefef"
-                                      : "inherit",
-                                    marginBottom: "12px",
-                                    marginTop: "12px",
-                                    border: "1px solid black",
-                                    borderRadius: "8px",
-                                    padding: "5px",
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      background: "#B8C2CC",
-                                      borderRadius: "8px",
-                                      marginBottom: "12px",
-                                      padding: "12px",
-                                    }}
-                                  >
-                                    <Typography
-                                      variant="h6"
-                                      style={{ fontWeight: "bold" }}
-                                    >
-                                      {order?.table_name}
-                                    </Typography>
-                                    <Typography variant="subtitle2">
-                                      {order.order_time}
-                                    </Typography>
-                                  </Box>
-                                  <Divider />
-                                  {order.items.map((item, index) => (
-                                    <>
-                                    <div
-                                      key={index}
-                                      style={{
-                                        padding: "12px 0",
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                      }}
-                                    >
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          {item.name}
-                                        </Typography>
-                                      </div>
-                                      <div>
-                                        <Typography
-                                          variant="subtitle1"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          x{item.quantity}
-                                        </Typography>
-
-
-
-
-                                        
-                                      </div>
-                                      
-                                    </div>
-                                    <Divider />
-                                    {item?.orderOptions.map((item, index) => (
-    <div
-        key={index}
-        style={{
-            
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-        }}
-    >
-        <div>
-            <Typography
-                variant="subtitle1"
-           
-            >
-                {item.order_option_name}
-            </Typography>
-        </div>
-        <div>
-            <Typography
-                variant="subtitle1"
-                style={{ fontWeight: "bold" }}
-            >
-                x{item.quantity}
-            </Typography>
-        </div>
-    </div>
-))}
-                                    </>
-                                  ))}
-                                </Card>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                      {provided.placeholder}
-                    </div>
-                  </Card>
-                </Grid>
-              )}
-            </Droppable>
-          </Grid>
-        </DragDropContext>
-      </Container>
+              <PlacedOrders
+                orders={orders.filter((order) => order.status === "Placed")}
+              />
+              <InProgressOrders
+                orders={orders.filter(
+                  (order) => order.status === "In-progress"
+                )}
+              />
+              <CompletedOrders
+                orders={orders.filter((order) => order.status === "Completed")}
+              />
+            </Grid>
+          </DragDropContext>
+        </Container>
       )}
+
+      <Snackbar
+        sx={{ marginTop: "50px" }}
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }} // Set anchorOrigin to top center
+      >
+        <Alert
+          elevation={6}
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

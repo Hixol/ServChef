@@ -51,8 +51,8 @@ async function getAllPrinter() {
 //   if (response) return response;
 //   throw new Error("Could not fetch getAllPrinterData");
 // }
-async function updateOrderStatus(locationId, orderId, newStatus) {
-  console.log(locationId, orderId, newStatus);
+async function updateOrderStatus(locationId, newRole, orderId, newStatus) {
+  console.log(locationId, newRole, orderId, newStatus);
   try {
     const { token } = LoginService.getToken();
     const response = await fetch(
@@ -65,7 +65,7 @@ async function updateOrderStatus(locationId, orderId, newStatus) {
           "Content-Type": "application/json",
           "X-ACCESS-TOKEN": token,
         },
-        body: JSON.stringify({ order_status: newStatus }),
+        body: JSON.stringify({ order_status: newStatus, role: newRole }),
       }
     );
     if (response.ok) {

@@ -241,11 +241,12 @@ const Login = () => {
     sm={6}
     md={7}
     sx={{
-      backgroundImage: 'url(https://servall.be/wp-content/uploads/2023/11/1-28.png)',
+      backgroundImage: 'url(https://www.bdtask.com/sp/cloud-kitchen/img/cloud-kitchen-management-system/cloud-kitchen-pos-system.webp)',
       backgroundRepeat: 'no-repeat',
-      backgroundColor: (t) =>
-        t.palette.mode === 'dark' ? t.palette.grey[50] : t.palette.grey[900],
-      backgroundSize: { sm: 'cover', md: 'contain' },
+      backgroundColor:"#228B22",
+      // backgroundColor: (t) =>
+      //   t.palette.mode === 'dark' ? t.palette.grey[50] : t.palette.grey[900],
+      backgroundSize: { sm: 'contain', md: 'contain' },
       backgroundPosition: 'center',
     }}
   />
