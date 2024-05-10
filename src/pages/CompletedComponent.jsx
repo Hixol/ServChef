@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { Card, Typography, Box, Divider, Grid, CardContent } from "@mui/material";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Card, Typography, Box, Divider, Grid } from "@mui/material";
+// import AccessTimeIcon from '@mui/icons-material/AccessTime';
 // import EventIcon from '@mui/icons-material/Event'; // Importing EventIcon
 
 const CompletedOrders = ({ orders }) => {
@@ -181,6 +181,12 @@ const CompletedOrders = ({ orders }) => {
                                   </div>
                                 </div>
                               ))}
+                                                           <Divider />
+                             <div style={{ textAlign: "center" }}>
+  <Typography variant="subtitle2" style={{ fontWeight: "bold" }}>
+    {item?.comment}
+  </Typography>
+</div>
                             </>
                           ))}
                         </Card>

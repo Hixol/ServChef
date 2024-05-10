@@ -6,6 +6,7 @@ import { Grid, Card, Typography, Box, Divider } from "@mui/material";
 
 
 const PlacedOrders = ({ orders }) => {
+  console.log("ORDERS",orders);
   return (
     <Droppable droppableId="placed">
       {(provided) => (
@@ -124,7 +125,7 @@ const PlacedOrders = ({ orders }) => {
                             <div
                               key={index}
                               style={{
-                              
+                              padding:"5px",
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center",
@@ -172,6 +173,14 @@ const PlacedOrders = ({ orders }) => {
                                 </div>
                               </div>
                             ))}
+                             <Divider />
+                             <div style={{ textAlign: "center" }}>
+  <Typography variant="subtitle2" style={{ fontWeight: "bold" }}>
+    {item?.comment}
+  </Typography>
+</div>
+
+                             
                           </>
                         ))}
                       </Card>
