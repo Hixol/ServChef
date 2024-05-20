@@ -1,14 +1,13 @@
 import axios from "axios";
-import CONSTANTS from "../constants";
+import { CONSTANTS, URLS } from "../constants";
 //  url of the api
 // if vite - use import.meta.env.VITE_API_URL
 // if react - use process.env.REACT_APP_API_URL
 
-const url = `${CONSTANTS.API_URL}/sessions/manager`;
+const url = `${CONSTANTS.API_URL}${URLS.LOGIN}`;
 
 const handleApiCall = ({ data, cb, setLoading }) => {
-  console.log("DATA", data);
-  const modifiedData = {
+  const LoginData = {
     email: data.userName,
     password: data.password,
     tab_device_token: data.tab_device_token,
@@ -21,21 +20,17 @@ const handleApiCall = ({ data, cb, setLoading }) => {
       const response = await axios({
         method: "POST",
         url,
-        data: JSON.stringify(modifiedData),
+        data: JSON.stringify(LoginData),
         headers: {
-          "Content-Type": "application/json",
+          ...CONSTANTS.REQUEST_HEADERS,
         },
       });
-
       setLoading(false);
-
       return cb(response.data, response.status);
     } catch (error) {
       setLoading(false);
-
       cb(error, error.message);
 
-      console.log(error.response?.data?.message);
       throw error;
     }
   }

@@ -1,5 +1,4 @@
 import Login from "./Login";
-import Profile from "./Profile";
-import ServChef from "./ServChef";
+import OrdersPage from "./OrdersPage";
 
-export { Login, Profile, ServChef };
+export { Login, OrdersPage };
