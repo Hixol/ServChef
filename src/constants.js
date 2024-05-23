@@ -15,7 +15,7 @@ const DEV_CONSTANTS = {
 const PROD_CONSTANTS = {
   BASE_URL: "https://app.servall.be",
   PANEL_URL: "",
-  API_URL: "https://server.servall.be",
+  API_URL: "https://server.servall.co.uk",
   WEB_URL: "https://app.servall.be",
   SOCKET_URL: "",
   REQUEST_HEADERS: {
