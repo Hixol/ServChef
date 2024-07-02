@@ -2,7 +2,7 @@
 const DEV_CONSTANTS = {
   BASE_URL: "http://localhost:3002",
   PANEL_URL: "http://localhost/restaurants",
-  API_URL: "http://localhost:4000",
+  API_URL: "http://192.168.100.69:4000",
   WEB_URL: "http://localhost:3002",
   SOCKET_URL: "",
   REQUEST_HEADERS: {
@@ -28,6 +28,8 @@ const PROD_CONSTANTS = {
 const URLS = {
   LOGIN: "/sessions/manager",
   GETPRINTERDATA: "/orders/live",
+  GETDIRECTORDERSDATA: "/direct_orders/servchef/orders",
+
   UPDATECARDSTATUS: (locationId, orderId) =>
     `/servchef/${locationId}/orders/${orderId}`,
   GETALLNOTIFICATIONS: (locationId, page) =>
