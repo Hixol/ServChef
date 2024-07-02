@@ -56,6 +56,7 @@ const AllOrders = ({ title, orders, droppableId }) => {
               {...provided.droppableProps}
             >
               {filteredOrders.map((order, index) => (
+                console.log("ORDERS========",order),
                 <Draggable
                   key={order.id.toString()}
                   draggableId={order.id.toString()}
@@ -77,7 +78,16 @@ const AllOrders = ({ title, orders, droppableId }) => {
                             title
                           )}`}
                         >
-                          <Typography>{order?.table_name}</Typography>
+                          {/* <Typography>{order?.table_name}</Typography> */}
+                          <Typography fontWeight={600}>
+  {order?.table_name 
+    ? order.table_name 
+    : order?.order_type 
+      ? order.order_type 
+      : null}
+</Typography>
+
+      
 
                           <div className={`${styles.timeContainer}`}>
                             <div className={`${styles.time}`}>

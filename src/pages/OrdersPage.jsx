@@ -133,14 +133,18 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
+      console.log("RESPONSE", response);
       if (response.rows.length > 0) {
+  
         const formattedOrders = response.rows.map((row) => ({
+ 
           id: row.order_id,
           order_date: row.order_date,
           table_name: row.Table ? row.Table.table_name : null,
           location_name: row.Location ? row.Location.name : null,
           order_total: row.order_total,
           order_tax: row.order_tax,
+          order_type:row.order_type,
           order_time: row.order_time,
           status: row.PrinterStatus ? row.PrinterStatus[newRole] : null,
           items: row.OrderMenus.map((menu) => ({
