@@ -1,6 +1,7 @@
 import {Route, Routes } from "react-router-dom";
-import { OrdersPage, Login } from "./pages";
+import { OrdersPage, Login } from "./pages/index.js";
 import HandleAuth from "./auth/HandleAuth";
+
 function App() {
   return (
     <Routes>
