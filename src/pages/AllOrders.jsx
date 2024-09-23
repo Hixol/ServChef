@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Droppable, Draggable } from "react-beautiful-dnd";
-import { Card, Typography, Box, Divider, Grid } from "@mui/material";
+import {Card, Typography, Box, Divider, Grid2, Stack} from "@mui/material";
 import styles from "../css/AllOrders.module.css"; // Impoting CSS module
 
 // Component for displaying all orders based on status
@@ -9,7 +9,7 @@ const AllOrders = ({ title, orders, droppableId }) => {
 // Function to determine status color based on title
 
   const getStatusColor = (title) => {
- //Used Switch Case to Handle The Colors Based on Title
+    //Used Switch Case to Handle The Colors Based on Title
     switch (title) {
       case "Placed":
         return styles.placed;
@@ -41,120 +41,87 @@ const AllOrders = ({ title, orders, droppableId }) => {
 
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
-    <Droppable droppableId={droppableId}>
-      {(provided) => (
-        <Grid item sm={4} md={3} className={`${styles.gridStyle}`}>
-          <Card className={`${styles.ordersColumn} `}>
-            <Box className={`${styles.ordersHeader} ${getStatusColor(title)}`}>
-              <Typography className={`${styles.titleTypography}`} variant="h6">
-                {title}
-              </Typography>
-            </Box>
-            <div
-              className={styles.ordersContainer}
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-            >
-              {filteredOrders.map((order, index) => (
-                console.log("ORDERS========",order),
-                <Draggable
-                  key={order.id.toString()}
-                  draggableId={order.id.toString()}
-                  index={index}
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                    >
-                      <Card
-                        className={`${styles.orderCard} ${
-                          snapshot.isDragging ? styles.orderCardDragging : ""
-                        }`}
+      <Droppable droppableId={droppableId}>
+        {(provided) => (
+            <Grid2 size={{xs: 12, sm: 4, md: 3}}>
+              <Card className={`${styles.ordersColumn} `}>
+                <Box className={`${styles.ordersHeader} ${getStatusColor(title)}`}>
+                  <Typography className={`${styles.titleTypography}`} variant="h6">
+                    {title}
+                  </Typography>
+                </Box>
+                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)'}} ref={provided.innerRef}{...provided.droppableProps}>
+                  {filteredOrders.map((order, index) => (
+                      <Draggable
+                          key={index}
+                          draggableId={order.id.toString()}
+                          index={index}
                       >
-                        <Box
-                          className={`${styles.orderDetails} ${getStatusColor(
-                            title
-                          )}`}
-                        >
-                          {/* <Typography>{order?.table_name}</Typography> */}
-                          <Typography fontWeight={600}>
-  {order?.table_name 
-    ? order.table_name 
-    : order?.order_type 
-      ? order.order_type 
-      : null}
-</Typography>
-
-      
-
-                          <div className={`${styles.timeContainer}`}>
-                            <div className={`${styles.time}`}>
-                              <Typography variant="subtitle2">
-                                {order.order_time}
-                              </Typography>
-                            </div>
-                          </div>
-                        </Box>
-
-                        {order.items.map((item, index) => (
-                          <>
+                        {(provided, snapshot) => (
                             <div
-                              key={index}
-                              className={`${styles.orderItemsContainer}`}
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
                             >
-                              <div>
-                                <Typography variant="subtitle2">
-                                  {item.name}
-                                </Typography>
-                              </div>
-                              <div>
-                                <Typography variant="subtitle2">
-                                  x{item.quantity}
-                                </Typography>
-                              </div>
-                            </div>
-                            <Divider />
-                            {item?.orderOptions.map((item, index2) => (
-                              <div
-                                key={index2}
-                                className={`${styles.orderOptionsContainer}`}
+                              <Card
+                                  className={`${styles.orderCard} ${
+                                      snapshot.isDragging ? styles.orderCardDragging : ""
+                                  }`}
                               >
-                                <div>
-                                  <Typography variant="subtitle2">
-                                    {item.order_option_name}
+                                <Box className={`${styles.orderDetails} ${getStatusColor(title)}`}>
+                                  {/* <Typography>{order?.table_name}</Typography> */}
+                                  <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
+                                    {order?.table_name
+                                        ? order.table_name
+                                        : order?.order_type
+                                            ? order.order_type
+                                            : null}
                                   </Typography>
-                                </div>
-                                <div>
+
                                   <Typography variant="subtitle2">
-                                    x{item.quantity}
+                                    {order.order_time}
                                   </Typography>
-                                </div>
-                              </div>
-                            ))}
-                            <Divider />
-                            <div className={`${styles.commentContainer}`}>
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: "bold" }}
-                              >
-                                {item?.comment}
-                              </Typography>
+                                </Box>
+
+                                {order.items.map((item, index) => (
+                                    <>
+                                      <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
+                                        <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
+                                        <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
+                                      </Stack>
+                                      <Divider />
+                                      {item?.orderOptions.map((item, index2) => (
+                                          <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
+                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                                {item.order_option_name}
+                                              </Typography>
+                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                                x{item.quantity}
+                                              </Typography>
+                                          </Stack>
+                                      ))}
+                                      <Divider />
+                                      <div className={`${styles.commentContainer}`}>
+                                        <Typography
+                                            variant="subtitle2"
+                                            sx={{ fontWeight: "bold" }}
+                                        >
+                                          {item?.comment}
+                                        </Typography>
+                                      </div>
+                                    </>
+                                ))}
+                              </Card>
                             </div>
-                          </>
-                        ))}
-                      </Card>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          </Card>
-        </Grid>
-      )}
-    </Droppable>
+                        )}
+                      </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </Stack>
+              </Card>
+            </Grid2>
+        )}
+      </Droppable>
   );
 };
 export default AllOrders;

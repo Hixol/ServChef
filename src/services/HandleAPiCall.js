@@ -14,16 +14,11 @@ const handleApiCall = ({ data, cb, setLoading }) => {
     is_tab_login: data.is_tab_login,
   };
 
-  async function handelCall() {
+  const handelCall = async () => {
     setLoading(true);
     try {
-      const response = await axios({
-        method: "POST",
-        url,
-        data: JSON.stringify(LoginData),
-        headers: {
-          ...CONSTANTS.REQUEST_HEADERS,
-        },
+      const response = await axios({method: "POST", url, data: JSON.stringify(LoginData),
+        headers: {...CONSTANTS.REQUEST_HEADERS,},
       });
       setLoading(false);
       return cb(response.data, response.status);

@@ -12,6 +12,7 @@ async function getLocation() {
   const data = JSON.parse(localStorage.getItem("userData"));
   return data ? data.layout_setting.loc_id : null;
 }
+
 async function getAllNotificationForWeb(locationId, page = 0) {
   try {
     const { token } = LoginService.getToken();
@@ -33,20 +34,13 @@ async function getAllNotificationForWeb(locationId, page = 0) {
 async function updateNavBarNotificationStatus(locationId, notification_id) {
   try {
     const { token } = LoginService.getToken();
-    const response = await axios.get(
-      `${CONSTANTS.API_URL}${URLS.UPDATENOTIFICATIONS(
-        locationId,
-        notification_id
-      )}`,
+    const response = await axios.get(`${CONSTANTS.API_URL}${URLS.UPDATENOTIFICATIONS(locationId, notification_id)}`,
       {
-        headers: {
-          ...CONSTANTS.REQUEST_HEADERS,
-          "X-ACCESS-TOKEN": token,
-        },
+        headers: {...CONSTANTS.REQUEST_HEADERS, "X-ACCESS-TOKEN": token,},
       }
     );
     return response.data;
   } catch (error) {
-    throw new Error("Could not update notifications: " + error.message);
+    console.error("Error updating notification status:", error);
   }
 }

@@ -2,28 +2,20 @@ import { useState, useEffect } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { useNavigate } from "react-router-dom";
 import {
-  Grid,
-  Typography,
-  AppBar,
-  Box,
-  Toolbar,
-  IconButton,
-  Snackbar,
-  Alert,
-  Accordion,
-  AccordionDetails,
-  Slide,
-  Paper,
+  Typography, AppBar, Toolbar, IconButton, Snackbar, Alert, Slide,
+  Grid2, Tooltip, Badge, Button, Stack, CircularProgress, Menu, MenuItem,
 } from "@mui/material";
-import { RotatingLines } from "react-loader-spinner";
-import SOUNDFILE from "../assets/notification.wav";
+import SOUNDFILE from "../assets/order_placement_tune.wav";
 import WAITERSOUNDFILE from "../assets/reception-bell-14620.mp3";
 import ChefService from "../services/ChefService";
 import { Logout, Notifications, Visibility } from "@mui/icons-material";
 import LocationService from "../services/LocationService";
 import LoginService from "../services/LoginService";
 import AllOrders from "./AllOrders";
-import styles from "../css/OrdersPage.module.css"; // Import the CSS module
+import styles from "../css/OrdersPage.module.css";
+import {green, orange} from "@mui/material/colors";
+import {useAuthContext} from "../context/authContext.jsx";
+import {useSocketContext} from "../socket/socketContext.jsx";
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -34,37 +26,49 @@ const OrdersPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [notificationData, setNotificationData] = useState([]);
-  const [accordionOpen, setAccordionOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const {user, setUser} = useAuthContext();
+  const {socket} = useSocketContext();
 
   const navigate = useNavigate();
   const notificationAudio = new Audio(SOUNDFILE);
   const waiterAudio = new Audio(WAITERSOUNDFILE);
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  const newRole = userData ? userData.staff_role_name : null;
+  const newRole = user ? user.staff_role_name : null;
 
   // Function to handle user logout
   const handleLogout = () => {
     localStorage.clear();
+    setUser(null);
     navigate("login");
   };
   // Effect hook for fetching data and notifications with timer 3 secs for data & 5 secs for notifications
   useEffect(() => {
     const fetchDataAndNotifications = async () => {
       await fetchData();
-      const fetchDataIntervalId = setInterval(fetchData, 3000);
       await fetchNotifications();
-      const fetchNotificationsIntervalId = setInterval(
-        fetchNotifications,
-        5000
-      );
-      return () => {
-        clearInterval(fetchDataIntervalId);
-        clearInterval(fetchNotificationsIntervalId);
-      };
     };
 
+    if (socket) {
+      socket.on("current_order", () => {
+        fetchDataAndNotifications();
+      })
+
+      socket.on("Call_Waiter", () => {
+        fetchNotifications();
+      })
+    }
+
     fetchDataAndNotifications();
-  }, []);
+  }, [socket]);
 
   // Effect hook for fetching role, location, notifications, and data
   useEffect(() => {
@@ -90,13 +94,12 @@ const OrdersPage = () => {
   const fetchNotifications = async () => {
     let locationData = await LocationService.getLocation();
     let notifications = await LocationService.getAllNotificationForWeb(
-      locationData
+        locationData
     );
     setNotificationData(notifications);
 
     // Logic for handling new notifications
-    const oldNotificatonsCount =
-      JSON.parse(localStorage.getItem("notificationsCount")) || 0;
+    const oldNotificatonsCount = JSON.parse(localStorage.getItem("notificationsCount")) || 0;
     const newNotificationsCount = notifications.countAllNotification;
     if (oldNotificatonsCount !== 0) {
       if (newNotificationsCount > oldNotificatonsCount) {
@@ -104,23 +107,15 @@ const OrdersPage = () => {
         const latestNotification = notifications.notificationList[0];
 
         if (latestNotification.not_type === "Call_Waiter") {
-          handleSnackbarOpen(
-            `${latestNotification.message} on ${latestNotification.table_name}`
-          );
+          handleSnackbarOpen(`${latestNotification.message} on ${latestNotification.table_name}`);
         } else {
           handleSnackbarOpen(`${latestNotification.message}`);
         }
 
-        localStorage.setItem(
-          "notificationsCount",
-          JSON.stringify(newNotificationsCount)
-        );
+        localStorage.setItem("notificationsCount", JSON.stringify(newNotificationsCount));
       }
     } else {
-      localStorage.setItem(
-        "notificationsCount",
-        JSON.stringify(newNotificationsCount)
-      );
+      localStorage.setItem("notificationsCount", JSON.stringify(newNotificationsCount));
     }
   };
   // Function to fetch user role
@@ -133,11 +128,11 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
-      console.log("RESPONSE", response);
+      // console.log("RESPONSE", response);
       if (response.rows.length > 0) {
-  
+
         const formattedOrders = response.rows.map((row) => ({
- 
+
           id: row.order_id,
           order_date: row.order_date,
           table_name: row.Table ? row.Table.table_name : null,
@@ -168,8 +163,7 @@ const OrdersPage = () => {
             })),
           })),
         }));
-        const oldOrdersCount =
-          JSON.parse(localStorage.getItem("ordersCount")) || 0;
+        const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
         if (oldOrdersCount !== 0) {
           if (newOrdersCount > oldOrdersCount) {
@@ -189,11 +183,6 @@ const OrdersPage = () => {
     }
   };
 
-  // Function to handle bell icon click for opening/closing notifications accordion
-  const handleBellClick = () => {
-    setAccordionOpen(!accordionOpen);
-  };
-
   // Function to handle drag and drop end event
   const onDragEnd = async (result) => {
     if (!result.destination) {
@@ -202,10 +191,10 @@ const OrdersPage = () => {
     setIsUpdating(true);
     try {
       await ChefService.updateOrderStatus(
-        location,
-        newRole,
-        result.draggableId,
-        result.destination.droppableId
+          location,
+          newRole,
+          result.draggableId,
+          result.destination.droppableId
       );
 
       await fetchData();
@@ -218,7 +207,7 @@ const OrdersPage = () => {
     setOrders((prevOrders) => {
       const updatedOrders = [...prevOrders];
       const index = updatedOrders.findIndex(
-        (order) => order.id === result.destination.droppableId
+          (order) => order.id === result.destination.droppableId
       );
       updatedOrders[index] = result.destination.droppableId;
       return updatedOrders;
@@ -227,185 +216,109 @@ const OrdersPage = () => {
 
   // Function to handle notification status update
   const handleNotificationStatusUpdate = async (notification_id) => {
-    try {
-      await LocationService.updateNavBarNotificationStatus(
-        location,
-        notification_id
-      );
+      await LocationService.updateNavBarNotificationStatus(location, notification_id);
       fetchNotifications();
-    } catch (error) {
-      console.error("Error updating notification status:", error);
-    }
   };
 
   // JSX rendering using css modules
   return (
-    <>
-      <AppBar position="sticky">
-        <Toolbar className={styles.toolbar}>
-          <Box className={styles.leftAlignedBox}>
-            <Typography
-              variant="h5"
-              color="inherit"
-              className={styles.welcomeMessage}
-            >
+      <>
+        <AppBar position="sticky">
+          <Toolbar sx={{backgroundColor: green[800], justifyContent: 'space-between'}}>
+            <Typography variant="h5" sx={{fontSize: '1.2rem', fontWeight: '800', color: 'white'}}>
               Welcome: {role}
             </Typography>
-          </Box>
-          <Box className={styles.rightAlignedBox}>
-            <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="bell"
-              onClick={handleBellClick}
-              style={{ position: "relative", marginRight: "10px" }}
-            >
-              {notificationData?.countNotification > 0 && (
-                <sup className={styles.notificationCount}>
-                  {notificationData?.countNotification}
-                </sup>
-              )}
-              <Notifications />
-            </IconButton>
+            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'center', columnGap: '1rem'}}>
+              <Tooltip title="Notifications">
+                <IconButton size='small' color="inherit" aria-label="bell" onClick={handleClick}>
+                  <Badge badgeContent={notificationData?.countNotification} color='primary' sx={{'& .MuiBadge-colorPrimary': {backgroundColor: orange[300], color: 'white'}}}>
+                    <Notifications sx={{color: 'white'}}/>
+                  </Badge>
+                </IconButton>
+              </Tooltip>
 
-            <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="logout"
-              onClick={handleLogout}
-            >
-              <Logout />
-              <Typography variant="h5" color="inherit">
-                Logout
-              </Typography>
-            </IconButton>
-          </Box>
-        </Toolbar>
-      </AppBar>
-      <Accordion
-        expanded={accordionOpen}
-        style={{
-          position: "fixed",
-          top: "80px",
-          right: "20px",
-          maxHeight: "500px",
-          overflowY: "auto",
-          zIndex: "1000",
-          backgroundColor: "#fff",
-          display: accordionOpen ? "block" : "none",
-        }}
-      >
-        <AccordionDetails style={{ display: "flex", flexDirection: "column" }}>
-          <Typography>
-            {notificationData?.notificationList?.map((notification) => (
-              <Paper
-                key={notification.not_id}
-                elevation={3}
-                className={styles.notificationPaper}
-              >
-                <div style={{ flex: 1, marginRight: "10px" }}>
-                  <Typography
-                    variant="h6"
-                    style={{ fontWeight: "bold", marginBottom: "5px" }}
-                    title={notification.title}
-                  >
+              <Button
+                  startIcon={<Logout />} variant="contained"
+                  sx={{backgroundColor: 'transparent', '&:hover': {backgroundColor: 'transparent', boxShadow: 'none'}, color: 'white', boxShadow: 'none'}}
+                  aria-label="logout" onClick={handleLogout}>
+                <Typography variant="h6" color="inherit" sx={{textTransform: 'capitalize', fontSize: '1rem'}}>Logout</Typography>
+              </Button>
+            </Stack>
+          </Toolbar>
+        </AppBar>
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose} style={{maxHeight: "500px"}}>
+          {notificationData?.notificationList?.map((notification, nIndex) => (
+              <MenuItem key={notification.not_id} sx={{width: '400px', borderTop: '1px solid #b7b7b7', padding: '1rem', borderBottom: (nIndex === notificationData?.notificationList?.length - 1 ? '1px solid #b7b7b7' : 'none')}}>
+                <Stack style={{ flexGrow: 1, marginRight: "10px" }}>
+                  <Typography variant="h6" style={{ fontWeight: "bold", marginBottom: "5px" }} title={notification.title}>
                     {notification.title}
                   </Typography>
 
-                  <Typography
-                    variant="body1"
-                    style={{ marginBottom: "5px" }}
-                    title={notification.message}
-                  >
+                  <Typography variant="body1" style={{ marginBottom: "5px" }} title={notification.message}>
                     {notification.message}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    style={{ marginBottom: "5px", color: "#666" }}
-                  >
+
+                  <Typography variant="body2" style={{ marginBottom: "5px", color: "#666" }}>
                     {new Date(notification.not_timer).toLocaleString()}
                   </Typography>
                   {notification.table_name && (
-                    <Typography variant="body2" style={{ color: "#444" }}>
-                      {notification.table_name}
-                    </Typography>
+                      <Typography variant="body2" style={{ color: "#444", textTransform: 'capitalize' }}>
+                        {notification.table_name}
+                      </Typography>
                   )}
-                </div>
-                <IconButton
-                  color="primary"
-                  onClick={() =>
-                    handleNotificationStatusUpdate(notification.not_id)
-                  }
-                >
+                </Stack>
+                <IconButton color="success" onClick={() => handleNotificationStatusUpdate(notification.not_id)}>
                   <Visibility />
                 </IconButton>
-              </Paper>
-            ))}
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+              </MenuItem>
+          ))}
+        </Menu>
 
-      {isLoading || isUpdating ? (
-        <div className={styles.loaderContainer}>
-          <RotatingLines
-            visible={true}
-            height="80"
-            width="80"
-            color="#4fa94d"
-            ariaLabel="grid-loading"
-            radius="12.5"
-            wrapperStyle={{}}
-            wrapperClass="grid-wrapper"
-          />
-        </div>
-      ) : (
-        <Box className={styles.container}>
-          <br></br>
-
-          {/* Drag and drop context for orders */}
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Grid container justifyContent="center" spacing={2}>
-              {/* Component for displaying orders */}
-              <AllOrders title="Placed" orders={orders} droppableId="placed" />
-              <AllOrders
-                title="In Progress"
-                orders={orders}
-                droppableId="In-Progress"
+        <Stack sx={{alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', maxHeight: {xs: '100%', md: 'calc(100vh - 64px)'}, maxWidth: '100vw', overflow: {xs: 'auto', md: 'hidden'}, width: '100vw'}}>
+          {isLoading || isUpdating ? (
+              <CircularProgress
+                  size={50}
+                  color="success"
+                  aria-label="grid-loading"
               />
-              <AllOrders
-                title="Completed"
-                orders={orders}
-                droppableId="completed"
-                Í
-              />
-            </Grid>
-          </DragDropContext>
-        </Box>
-      )}
+          ) : (
+              <>
+                {/* Drag and drop context for orders */}
+                <DragDropContext onDragEnd={onDragEnd}>
+                  <Grid2 container justifyContent="center" spacing={2} sx={{paddingY: '1rem', height: '100%', width: '100%', paddingX: '1rem'}}>
+                    {/* Component for displaying orders */}
+                    <AllOrders title="Placed" orders={orders} droppableId="placed" />
+                    <AllOrders title="In Progress" orders={orders} droppableId="In-Progress"/>
+                    <AllOrders title="Completed" orders={orders} droppableId="completed" Í/>
+                  </Grid2>
+                </DragDropContext>
+              </>
+          )}
+        </Stack>
 
-      {/* Snackbar for displaying success messages */}
-      <Snackbar
-        className={styles.snackbar}
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        TransitionComponent={Slide}
-        TransitionProps={{
-          direction: "left",
-        }}
-      >
-        <Alert
-          elevation={6}
-          variant="filled"
-          onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          className={styles.alert}
+        {/* Snackbar for displaying success messages */}
+        <Snackbar
+            className={styles.snackbar}
+            open={snackbarOpen}
+            autoHideDuration={3000}
+            onClose={() => setSnackbarOpen(false)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            TransitionComponent={Slide}
+            TransitionProps={{
+              direction: "left",
+            }}
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </>
+          <Alert
+              elevation={6}
+              variant="filled"
+              onClose={() => setSnackbarOpen(false)}
+              severity="success"
+              className={styles.alert}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </>
   );
 };
 

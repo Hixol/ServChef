@@ -1,78 +1,72 @@
 
 /* Styles for the app bar */
 .appBar {
-    position: sticky;
-  }
-  
-  /* Styles for the toolbar */
-  .toolbar {
-    display: flex;
-  }
-  
-  /* Styles for the left aligned box */
-  .leftAlignedBox {
-    margin-right: auto;
-  }
-  
-  /* Styles for the right aligned box */
-  .rightAlignedBox {
-    margin-left: auto;
-  }
-  
-  /* Styles for the welcome message */
-  .welcomeMessage {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #ffff;
-  }
-  
- 
-  /* Styles for the notification count badge */
-  .notificationCount {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    font-size: 14px;
-    font-weight: bold;
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    padding: 4px;
-    min-width: 20px;
-    text-align: center;
-  }
-  
+  position: sticky;
+}
 
-  
-  /* Styles for the paper inside accordion */
-  .notificationPaper {
-    margin-bottom: 10px;
-    padding: 15px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    display: flex;
-    align-items: center;
-    width: 400px;
-  }
-  
+/* Styles for the left aligned box */
+.leftAlignedBox {
+  margin-right: auto;
+}
 
-  .loaderContainer {
-    display: flex;
-    justify-content: center;
-    margin-top: 25rem;
-  }
-  
-  .container {
-    padding: 8px;
-  }
-  
-  /* Styles for the snackbar */
-  .snackbar {
-    margin-top: 50px;
-  }
-  
-  /* Styles for the snackbar alert */
-  .alert {
-    font-size: 1.1rem;
-  }
+/* Styles for the right aligned box */
+.rightAlignedBox {
+  margin-left: auto;
+}
+
+/* Styles for the welcome message */
+.welcomeMessage {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #ffff;
+}
+
+
+/* Styles for the notification count badge */
+.notificationCount {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: red;
+  color: white;
+  border-radius: 50%;
+  padding: 4px;
+  min-width: 20px;
+  text-align: center;
+}
+
+
+
+/* Styles for the paper inside accordion */
+.notificationPaper {
+  padding: 1rem;
+  border-radius: 5px;
+  background-color: #bd0606;
+  display: flex;
+  align-items: center;
+  width: 400px;
+}
+
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 25rem;
+}
+
+.container {
+  padding: 1rem;
+}
+
+/* Styles for the snackbar */
+.snackbar {
+  margin-top: 50px;
+}
+
+/* Styles for the snackbar alert */
+.alert {
+  font-size: 1.1rem;
+}
   

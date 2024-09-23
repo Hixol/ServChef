@@ -8,43 +8,43 @@ import {
   Snackbar,
   InputAdornment,
   IconButton,
-  Grid,
   Paper,
   Box,
   CssBaseline,
   createTheme,
-  ThemeProvider,
+  ThemeProvider, Grid2, CircularProgress,
 } from "@mui/material";
 import MuiAlert from '@mui/material/Alert';
-import { RotatingLines } from "react-loader-spinner";
 import Image from "../assets/ServAll.png";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import styles from "../css/Login.module.css";
+import {useAuthContext} from "../context/authContext.jsx";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     userName: "",
     password: "",
-    tab_device_token: "123", 
-   is_tab_login: true, 
+    tab_device_token: "123",
+    is_tab_login: true,
   });
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState(null);
+  const {setUser} = useAuthContext();
 
   // Function to handle input changes
   const handleOnChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
- // Function to handle API errors
+  // Function to handle API errors
   const handleApiError = (errorMessage) => {
     setError(errorMessage);
     setLoading(false);
   };
- // Function to handle form submission
+  // Function to handle form submission
   const handleSubmit = () => {
     if (!formData.userName || !formData.password) {
       setFormError("Please enter both username and password.");
@@ -65,11 +65,12 @@ const Login = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userData", JSON.stringify(data));
       navigate("/");
+      setUser(data);
     } else {
       handleApiError("Login failed. Please check your credentials.");
     }
   };
- // Effect hook to check if user is already logged in
+  // Effect hook to check if user is already logged in
   useEffect(() => {
     const loggedToken = localStorage.getItem("token");
     if (loggedToken) {
@@ -77,7 +78,7 @@ const Login = () => {
     }
   }, [navigate]);
 
-    // Function to handle close event of Snackbar for form errors
+  // Function to handle close event of Snackbar for form errors
   const handleSnackbarClose = () => {
     setError(null);
   };
@@ -87,82 +88,70 @@ const Login = () => {
   };
 
 
-    // Rendering JSX using CSS modules for styling 
+  // Rendering JSX using CSS modules for styling
   return (
-    <ThemeProvider theme={createTheme()}>
-      <Grid container component="main" className={styles.loginRoot}>
-        <CssBaseline />
-        <Grid item xs={false} sm={6} md={7} className={styles.loginBackgroundImage} />
-        <Grid item xs={12} sm={6} md={5} component={Paper} elevation={6} square>
-          <Box className={styles.loginContentBox}>
-            <Typography component="h1" variant="h5" sx={{ marginBottom: 2, fontWeight: "bold" }}>
-              Welcome To
-            </Typography>
-            <Box component="img" className={styles.loginLogo} alt="ServAll Logo" src={Image} />
-            <form noValidate onSubmit={handleSubmit} style={{ width: "80%" }}>
-              <TextField
-                id="userName"
-                label="Email"
-                variant="outlined"
-                fullWidth
-                value={formData.userName}
-                onChange={handleOnChange}
-                sx={{ marginBottom: 2 }}
-                aria-label="Username"
-              />
-              <TextField
-                id="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                variant="outlined"
-                fullWidth
-                value={formData.password}
-                onChange={handleOnChange}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                        {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ marginBottom: 2 }}
-                aria-label="Password"
-              />
-              <Box sx={{ display: "flex", justifyContent: { sm: "center", md: "flex-end" } }}>
-                {!loading && (
-                  <Button variant="contained" onClick={handleSubmit} disabled={loading} className={styles.loginButton}>
+      <ThemeProvider theme={createTheme()}>
+        <Grid2 container component="main" className={styles.loginRoot}>
+          <CssBaseline />
+          <Grid2 size={{xs: 0, sm: 6, md: 7}} className={styles.loginBackgroundImage} />
+          <Grid2 size={{xs: 12, sm: 6, md: 5}} component={Paper} elevation={6} square>
+            <Box className={styles.loginContentBox}>
+              <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+                Welcome To
+              </Typography>
+              <Box component="img" className={styles.loginLogo} alt="ServAll Logo" src={Image} />
+              <form noValidate onSubmit={handleSubmit} style={{ width: "80%", rowGap: '0.5rem', display: "flex", flexDirection: "column" }}>
+                <TextField
+                    color="success"
+                    id="userName" label="Email" variant="outlined" fullWidth value={formData.userName}
+                    onChange={handleOnChange} aria-label="Username"/>
+                <TextField
+                    color="success"
+                    id="password" label="Password" type={showPassword ? "text" : "password"} variant="outlined"
+                    fullWidth value={formData.password} onChange={handleOnChange}
+                    slotProps={{
+                      input: {
+                        endAdornment:
+                            <InputAdornment position="end">
+                              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                                {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                        ,
+                      },
+                    }}
+                    aria-label="Password"
+                />
+                <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-end" } }}>
+                  <Button color='success' startIcon={loading && <CircularProgress size={20} color='success' aria-label="grid-loading" />} variant="contained" onClick={handleSubmit} disabled={loading} className={styles.loginButton}>
                     Login
                   </Button>
-                )}
-                {loading && <RotatingLines visible={true} height="50" width="50" color="#4fa94d" ariaLabel="grid-loading" radius="12.5" />}
-              </Box>
-            </form>
-            <Snackbar
-              open={!!formError}
-              autoHideDuration={6000}
-              onClose={handleFormErrorClose}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            >
-              <MuiAlert elevation={6} variant="filled" onClose={handleFormErrorClose} severity="error">
-                {formError}
-              </MuiAlert>
-            </Snackbar>
-          </Box>
-        </Grid>
-      </Grid>
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <MuiAlert elevation={6} variant="filled" onClose={handleSnackbarClose} severity="error">
-          {error}
-        </MuiAlert>
-      </Snackbar>
-    </ThemeProvider>
+                </Box>
+              </form>
+              <Snackbar
+                  open={!!formError}
+                  autoHideDuration={6000}
+                  onClose={handleFormErrorClose}
+                  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              >
+                <MuiAlert elevation={6} variant="filled" onClose={handleFormErrorClose} severity="error">
+                  {formError}
+                </MuiAlert>
+              </Snackbar>
+            </Box>
+          </Grid2>
+        </Grid2>
+        <Snackbar
+            open={!!error}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <MuiAlert elevation={6} variant="filled" onClose={handleSnackbarClose} severity="error">
+            {error}
+          </MuiAlert>
+        </Snackbar>
+      </ThemeProvider>
   );
 };
 
