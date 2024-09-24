@@ -6,7 +6,7 @@ import { CONSTANTS, URLS } from "../constants";
 
 const url = `${CONSTANTS.API_URL}${URLS.LOGIN}`;
 
-const handleApiCall = ({ data, cb, setLoading }) => {
+const handleApiCall = ({ data, cb, setLoading, onError }) => {
   const LoginData = {
     email: data.userName,
     password: data.password,
@@ -24,9 +24,7 @@ const handleApiCall = ({ data, cb, setLoading }) => {
       return cb(response.data, response.status);
     } catch (error) {
       setLoading(false);
-      cb(error, error.message);
-
-      throw error;
+      onError(error, error.message);
     }
   }
 

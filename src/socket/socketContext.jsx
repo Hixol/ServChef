@@ -13,6 +13,8 @@ export const SocketContextProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const {user} = useAuthContext();
 
+    console.log("User", user);
+
     useEffect(() => {
         if (user && user.token) {
             const socket = io(`${CONSTANTS.SOCKET_URL}`, {
@@ -25,7 +27,7 @@ export const SocketContextProvider = ({ children }) => {
                 reconnection: true,
                 reconnectionDelay: 5000,
                 reconnectionDelayMax: 10000,
-                reconnectionAttempts: 15
+                reconnectionAttempts: 1000,
             })
 
             setSocket(socket);

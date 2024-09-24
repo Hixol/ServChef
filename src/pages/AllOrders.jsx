@@ -50,7 +50,7 @@ const AllOrders = ({ title, orders, droppableId }) => {
                     {title}
                   </Typography>
                 </Box>
-                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)'}} ref={provided.innerRef}{...provided.droppableProps}>
+                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)', height: '100%'}} ref={provided.innerRef}{...provided.droppableProps}>
                   {filteredOrders.map((order, index) => (
                       <Draggable
                           key={index}

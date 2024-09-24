@@ -55,7 +55,7 @@ const Login = () => {
       data: formData,
       cb: handleApiResponse,// Callback function for API response handling
       setLoading,
-      onError: () => handleApiError("Failed to connect to the server."),// Error handling for API call failure
+      onError: (error, message) => handleApiError("Login Failed, Please check your credentials"),// Error handling for API call failure
     });
   };
 

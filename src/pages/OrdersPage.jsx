@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import SOUNDFILE from "../assets/order_placement_tune.wav";
 import WAITERSOUNDFILE from "../assets/reception-bell-14620.mp3";
+import Silent_Sound from "../assets/silent_sound.mp3";
 import ChefService from "../services/ChefService";
 import { Logout, Notifications, Visibility } from "@mui/icons-material";
 import LocationService from "../services/LocationService";
@@ -36,39 +37,38 @@ const OrdersPage = () => {
     setAnchorEl(null);
   };
 
-  const {user, setUser} = useAuthContext();
-  const {socket} = useSocketContext();
 
-  const navigate = useNavigate();
   const notificationAudio = new Audio(SOUNDFILE);
   const waiterAudio = new Audio(WAITERSOUNDFILE);
+  const silentAudio = new Audio(Silent_Sound);
+
+  const navigate = useNavigate();
+  const {user} = useAuthContext();
   const newRole = user ? user.staff_role_name : null;
 
   // Function to handle user logout
   const handleLogout = () => {
     localStorage.clear();
-    setUser(null);
     navigate("login");
   };
   // Effect hook for fetching data and notifications with timer 3 secs for data & 5 secs for notifications
   useEffect(() => {
     const fetchDataAndNotifications = async () => {
       await fetchData();
+      const fetchDataIntervalId = setInterval(fetchData, 3000);
       await fetchNotifications();
+      const fetchNotificationsIntervalId = setInterval(
+          fetchNotifications,
+          5000
+      );
+      return () => {
+        clearInterval(fetchDataIntervalId);
+        clearInterval(fetchNotificationsIntervalId);
+      };
     };
 
-    if (socket) {
-      socket.on("current_order", () => {
-        fetchDataAndNotifications();
-      })
-
-      socket.on("Call_Waiter", () => {
-        fetchNotifications();
-      })
-    }
-
     fetchDataAndNotifications();
-  }, [socket]);
+  }, []);
 
   // Effect hook for fetching role, location, notifications, and data
   useEffect(() => {
@@ -99,23 +99,34 @@ const OrdersPage = () => {
     setNotificationData(notifications);
 
     // Logic for handling new notifications
-    const oldNotificatonsCount = JSON.parse(localStorage.getItem("notificationsCount")) || 0;
+    const oldNotificatonsCount =
+        JSON.parse(localStorage.getItem("notificationsCount")) || 0;
     const newNotificationsCount = notifications.countAllNotification;
     if (oldNotificatonsCount !== 0) {
       if (newNotificationsCount > oldNotificatonsCount) {
-        waiterAudio.play();
+        waiterAudio.play().catch((error) => {
+          console.error("Error playing waiter audio:", error);
+        });
         const latestNotification = notifications.notificationList[0];
 
         if (latestNotification.not_type === "Call_Waiter") {
-          handleSnackbarOpen(`${latestNotification.message} on ${latestNotification.table_name}`);
+          handleSnackbarOpen(
+              `${latestNotification.message} on ${latestNotification.table_name}`
+          );
         } else {
           handleSnackbarOpen(`${latestNotification.message}`);
         }
 
-        localStorage.setItem("notificationsCount", JSON.stringify(newNotificationsCount));
+        localStorage.setItem(
+            "notificationsCount",
+            JSON.stringify(newNotificationsCount)
+        );
       }
     } else {
-      localStorage.setItem("notificationsCount", JSON.stringify(newNotificationsCount));
+      localStorage.setItem(
+          "notificationsCount",
+          JSON.stringify(newNotificationsCount)
+      );
     }
   };
   // Function to fetch user role
@@ -128,7 +139,7 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
-      // console.log("RESPONSE", response);
+      console.log("RESPONSE", response);
       if (response.rows.length > 0) {
 
         const formattedOrders = response.rows.map((row) => ({
@@ -163,12 +174,15 @@ const OrdersPage = () => {
             })),
           })),
         }));
-        const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
+        const oldOrdersCount =
+            JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
         if (oldOrdersCount !== 0) {
           if (newOrdersCount > oldOrdersCount) {
             handleSnackbarOpen("New order received!");
-            notificationAudio.play();
+            notificationAudio.play().catch((error) => {
+              console.error("Error playing notification sound:", error);
+            });
             localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
           }
         } else {
@@ -216,11 +230,18 @@ const OrdersPage = () => {
 
   // Function to handle notification status update
   const handleNotificationStatusUpdate = async (notification_id) => {
-      await LocationService.updateNavBarNotificationStatus(location, notification_id);
+    try {
+      await LocationService.updateNavBarNotificationStatus(
+          location,
+          notification_id
+      );
       fetchNotifications();
+    } catch (error) {
+      console.error("Error updating notification status:", error);
+    }
   };
 
-  // JSX rendering using css modules
+
   return (
       <>
         <AppBar position="sticky">
