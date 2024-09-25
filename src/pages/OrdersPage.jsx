@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { DragDropContext } from "react-beautiful-dnd";
 import { useNavigate } from "react-router-dom";
 import {
   Typography, AppBar, Toolbar, IconButton, Snackbar, Alert, Slide,
-  Grid2, Tooltip, Badge, Button, Stack, CircularProgress, Menu, MenuItem,
+  Tooltip, Badge, Button, Stack, CircularProgress, Menu, MenuItem,
 } from "@mui/material";
 import SOUNDFILE from "../assets/order_placement_tune.wav";
 import WAITERSOUNDFILE from "../assets/reception-bell-14620.mp3";
@@ -305,7 +304,7 @@ const OrdersPage = () => {
               />
           ) : (
               <>
-                <AllOrders title="Placed" orders={orders} droppableId="placed" />
+                <AllOrders orders={orders} setOrders={setOrders} setIsUpdating={setIsUpdating} fetchData={fetchData} newRole={newRole} location={location}/>
               </>
           )}
         </Stack>

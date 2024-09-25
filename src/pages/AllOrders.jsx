@@ -1,10 +1,12 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {Card, Typography, Box, Divider, Grid2, Stack} from "@mui/material";
-import styles from "../css/AllOrders.module.css"; // Impoting CSS module
+import styles from "../css/AllOrders.module.css";
+import ChefService from "../services/ChefService";
+import LocationService from "../services/LocationService"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
-const AllOrders = ({ title, orders, droppableId }) => {
+const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   const { placedOrders, inProgressOrders, completedOrders } = useMemo(() => {
     const placedOrders = [];
     const inProgressOrders = [];
@@ -43,10 +45,10 @@ const AllOrders = ({ title, orders, droppableId }) => {
     setIsDragging(true);
   };
 
-  const handleDrop = (listName) => {
+  const handleDrop = async (listName) => {
     if (!draggedItem) return;
 
-    const newLists = { ...lists };
+    const newLists = {...lists};
 
     // Only move the item if it's dropped into a different list
     if (sourceList !== listName) {
@@ -54,14 +56,41 @@ const AllOrders = ({ title, orders, droppableId }) => {
       newLists[sourceList] = newLists[sourceList].filter(i => i.id !== draggedItem.id);
       // Add the item to the target list
       newLists[listName].push(draggedItem);
+
+      setLists(newLists);
+
+      // setIsUpdating(true);
+      try {
+        let locationData = await LocationService.getLocation();
+        await ChefService.updateOrderStatus(
+            locationData,
+            newRole,
+            draggedItem.id,
+            listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-progress" : "Completed"
+        );
+
+        // await fetchData();
+      } catch (error) {
+        console.error("Error updating order status:", error);
+      } finally {
+        // setIsUpdating(false);
+      }
+
+      // setOrders((prevOrders) => {
+      //   const updatedOrders = [...prevOrders];
+      //   const index = updatedOrders.findIndex(
+      //       (order) => order.id === draggedItem.id
+      //   );
+      //   updatedOrders[index] = listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-progress" : "Completed";
+      //   return updatedOrders;
+      // });
     }
 
     // Reset all states after the drop
-    setLists(newLists);
     setDraggedItem(null);
     setSourceList('');
     setIsDragging(false);
-    setStartTouchPosition({ x: 0, y: 0 });
+    setStartTouchPosition({x: 0, y: 0});
   };
 
   const handleTouchStart = (item, listName, e) => {
