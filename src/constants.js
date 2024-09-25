@@ -4,7 +4,7 @@ const DEV_CONSTANTS = {
   PANEL_URL: "http://localhost/restaurants",
   API_URL: "http://192.168.100.69:4000",
   WEB_URL: "http://localhost:3002",
-  SOCKET_URL: "https://server.servall.co.uk",
+  SOCKET_URL: "https://server.servall.be",
   REQUEST_HEADERS: {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -13,11 +13,11 @@ const DEV_CONSTANTS = {
 };
 //PRODUCTION CONSTANTS
 const PROD_CONSTANTS = {
-  BASE_URL: "https://app.servall.co.uk",
+  BASE_URL: "https://app.servall.be",
   PANEL_URL: "",
-  API_URL: "https://server.servall.co.uk",
-  WEB_URL: "https://app.servall.co.uk",
-  SOCKET_URL: "https://server.servall.co.uk",
+  API_URL: "https://server.servall.be",
+  WEB_URL: "https://app.servall.be",
+  SOCKET_URL: "https://server.servall.be",
   REQUEST_HEADERS: {
     Accept: "application/json",
     "Content-Type": "application/json",
