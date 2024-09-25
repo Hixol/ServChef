@@ -7,7 +7,6 @@ import {
 } from "@mui/material";
 import SOUNDFILE from "../assets/order_placement_tune.wav";
 import WAITERSOUNDFILE from "../assets/reception-bell-14620.mp3";
-import Silent_Sound from "../assets/silent_sound.mp3";
 import ChefService from "../services/ChefService";
 import { Logout, Notifications, Visibility } from "@mui/icons-material";
 import LocationService from "../services/LocationService";
@@ -37,38 +36,41 @@ const OrdersPage = () => {
     setAnchorEl(null);
   };
 
+  const {user, setUser} = useAuthContext();
+  const {socket} = useSocketContext();
 
   const notificationAudio = new Audio(SOUNDFILE);
   const waiterAudio = new Audio(WAITERSOUNDFILE);
-  const silentAudio = new Audio(Silent_Sound);
 
   const navigate = useNavigate();
-  const {user} = useAuthContext();
   const newRole = user ? user.staff_role_name : null;
 
   // Function to handle user logout
   const handleLogout = () => {
     localStorage.clear();
+    setUser(null);
     navigate("login");
   };
   // Effect hook for fetching data and notifications with timer 3 secs for data & 5 secs for notifications
   useEffect(() => {
     const fetchDataAndNotifications = async () => {
       await fetchData();
-      const fetchDataIntervalId = setInterval(fetchData, 3000);
       await fetchNotifications();
-      const fetchNotificationsIntervalId = setInterval(
-          fetchNotifications,
-          5000
-      );
-      return () => {
-        clearInterval(fetchDataIntervalId);
-        clearInterval(fetchNotificationsIntervalId);
-      };
     };
 
+    if (socket) {
+      socket.on("current_order", () => {
+        console.log("Here1");
+        fetchDataAndNotifications();
+      })
+
+      socket.on("Call_Waiter", () => {
+        fetchNotifications();
+      })
+    }
+
     fetchDataAndNotifications();
-  }, []);
+  }, [socket]);
 
   // Effect hook for fetching role, location, notifications, and data
   useEffect(() => {
@@ -99,8 +101,7 @@ const OrdersPage = () => {
     setNotificationData(notifications);
 
     // Logic for handling new notifications
-    const oldNotificatonsCount =
-        JSON.parse(localStorage.getItem("notificationsCount")) || 0;
+    const oldNotificatonsCount = JSON.parse(localStorage.getItem("notificationsCount")) || 0;
     const newNotificationsCount = notifications.countAllNotification;
     if (oldNotificatonsCount !== 0) {
       if (newNotificationsCount > oldNotificatonsCount) {
@@ -139,7 +140,6 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
-      console.log("RESPONSE", response);
       if (response.rows.length > 0) {
 
         const formattedOrders = response.rows.map((row) => ({
@@ -174,11 +174,12 @@ const OrdersPage = () => {
             })),
           })),
         }));
-        const oldOrdersCount =
-            JSON.parse(localStorage.getItem("ordersCount")) || 0;
+        const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
+        console.log(newOrdersCount, oldOrdersCount);
         if (oldOrdersCount !== 0) {
           if (newOrdersCount > oldOrdersCount) {
+            console.log(newOrdersCount, oldOrdersCount, "here2");
             handleSnackbarOpen("New order received!");
             notificationAudio.play().catch((error) => {
               console.error("Error playing notification sound:", error);
@@ -304,15 +305,7 @@ const OrdersPage = () => {
               />
           ) : (
               <>
-                {/* Drag and drop context for orders */}
-                <DragDropContext onDragEnd={onDragEnd}>
-                  <Grid2 container justifyContent="center" spacing={2} sx={{paddingY: '1rem', height: '100%', width: '100%', paddingX: '1rem'}}>
-                    {/* Component for displaying orders */}
-                    <AllOrders title="Placed" orders={orders} droppableId="placed" />
-                    <AllOrders title="In Progress" orders={orders} droppableId="In-Progress"/>
-                    <AllOrders title="Completed" orders={orders} droppableId="completed" Í/>
-                  </Grid2>
-                </DragDropContext>
+                <AllOrders title="Placed" orders={orders} droppableId="placed" />
               </>
           )}
         </Stack>

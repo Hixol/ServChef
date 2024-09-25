@@ -1,23 +1,23 @@
-import {createContext, useContext, useEffect, useState} from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
-import {CONSTANTS} from "../constants.js";
-import {useAuthContext} from "../context/authContext.jsx";
+import { CONSTANTS } from "../constants.js";
+import { useAuthContext } from "../context/authContext.jsx";
 
 export const useSocketContext = () => {
-    return useContext(SocketContext)
+    return useContext(SocketContext);
 }
 
-export const SocketContext = createContext()
+export const SocketContext = createContext();
 
 export const SocketContextProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
-    const {user} = useAuthContext();
-
-    console.log("User", user);
+    const [isConnected, setIsConnected] = useState(false);
+    const socketRef = useRef(null);
+    const { user } = useAuthContext();
 
     useEffect(() => {
         if (user && user.token) {
-            const socket = io(`${CONSTANTS.SOCKET_URL}`, {
+            const newSocket = io(`${CONSTANTS.SOCKET_URL}`, {
                 auth: {
                     token: user.token,
                     user_id: user.role[0].user_id,
@@ -28,34 +28,41 @@ export const SocketContextProvider = ({ children }) => {
                 reconnectionDelay: 5000,
                 reconnectionDelayMax: 10000,
                 reconnectionAttempts: 1000,
-            })
+            });
 
-            setSocket(socket);
+            socketRef.current = newSocket;
+            setSocket(newSocket);
+            setIsConnected(true);
 
-            socket.on("connect", () => {
-                console.log("connected")
-            })
+            newSocket.on("connect", () => {
+                console.log("connected");
+                setIsConnected(true);
+            });
 
-            socket.on("disconnect", () => {
-                console.log("disconnected")
-            })
+            newSocket.on("disconnect", () => {
+                console.log("disconnected");
+                setIsConnected(false);
+            });
 
-            socket.on("connect_error", (err) => {
-                console.log("Connection Error", err)
-            })
+            newSocket.on("connect_error", (err) => {
+                console.log("Connection Error", err);
+            });
 
-            socket.on("reconnect_error", (err) => {
-                console.log("Reconnection Error", err)
-            })
+            newSocket.on("reconnect_error", (err) => {
+                console.log("Reconnection Error", err);
+            });
 
-            return () => socket.close()
+            return () => {
+                newSocket.close();
+            };
         } else {
             if (socket) {
                 socket.close();
                 setSocket(null);
+                setIsConnected(false);
             }
         }
-    }, [user]);
+    }, [user, isConnected]);
 
-    return <SocketContext.Provider value={{socket}}>{children}</SocketContext.Provider>
+    return <SocketContext.Provider value={{ socket: socketRef.current, isConnected }}>{children}</SocketContext.Provider>;
 }

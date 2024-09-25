@@ -1,127 +1,239 @@
-import { useMemo } from "react";
-import { Droppable, Draggable } from "react-beautiful-dnd";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {Card, Typography, Box, Divider, Grid2, Stack} from "@mui/material";
 import styles from "../css/AllOrders.module.css"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
 const AllOrders = ({ title, orders, droppableId }) => {
-// Function to determine status color based on title
+  const { placedOrders, inProgressOrders, completedOrders } = useMemo(() => {
+    const placedOrders = [];
+    const inProgressOrders = [];
+    const completedOrders = [];
+
+    orders.forEach((order) => {
+      switch (order.status) {
+        case "Placed":
+          placedOrders.push(order);
+          break;
+        case "In-progress":
+          inProgressOrders.push(order);
+          break;
+        case "Completed":
+          completedOrders.push(order);
+          break;
+        default:
+          break;
+      }
+    });
+
+    return { placedOrders, inProgressOrders, completedOrders };
+  }, [orders]);
+
+  const [lists, setLists] = useState({placedOrders, inProgressOrders, completedOrders});
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [sourceList, setSourceList] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [targetList, setTargetList] = useState('');
+  const itemRefs = useRef({});
+  const [startTouchPosition, setStartTouchPosition] = useState({ x: 0, y: 0 });
+
+  const handleDragStart = (item, listName) => {
+    setDraggedItem(item);
+    setSourceList(listName);
+    setIsDragging(true);
+  };
+
+  const handleDrop = (listName) => {
+    if (!draggedItem) return;
+
+    const newLists = { ...lists };
+
+    // Only move the item if it's dropped into a different list
+    if (sourceList !== listName) {
+      // Remove item from the source list
+      newLists[sourceList] = newLists[sourceList].filter(i => i.id !== draggedItem.id);
+      // Add the item to the target list
+      newLists[listName].push(draggedItem);
+    }
+
+    // Reset all states after the drop
+    setLists(newLists);
+    setDraggedItem(null);
+    setSourceList('');
+    setIsDragging(false);
+    setStartTouchPosition({ x: 0, y: 0 });
+  };
+
+  const handleTouchStart = (item, listName, e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const itemElement = itemRefs.current[item.id];
+
+    if (itemElement) {
+      const rect = itemElement.getBoundingClientRect();
+      // Capture the initial touch position and element's position
+      setStartTouchPosition({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      });
+    }
+
+    handleDragStart(item, listName);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || !draggedItem) return;
+
+    e.preventDefault(); // Prevent default touch behavior
+    const touch = e.touches[0];
+    const draggedElement = itemRefs.current[draggedItem.id];
+
+    if (draggedElement) {
+      // Move the dragged element based on the difference between initial touch and current touch
+      draggedElement.style.position = 'absolute';
+      draggedElement.style.left = `${touch.clientX - startTouchPosition.x}px`;
+      draggedElement.style.top = `${touch.clientY - startTouchPosition.y}px`;
+
+      // Check which list the item is currently over
+      const listsArray = Object.keys(lists);
+      listsArray.forEach(list => {
+        const listElement = document.getElementById(list);
+        const rect = listElement.getBoundingClientRect();
+
+        if (
+            touch.clientX >= rect.left &&
+            touch.clientX <= rect.right &&
+            touch.clientY >= rect.top &&
+            touch.clientY <= rect.bottom
+        ) {
+          setTargetList(list);
+        }
+      });
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (targetList) {
+      handleDrop(targetList);
+    }
+    const draggedElement = itemRefs.current[draggedItem?.id];
+    if (draggedElement) {
+      draggedElement.style.position = 'static';
+    }
+    setTargetList(''); // Reset the target list
+  };
 
   const getStatusColor = (title) => {
     //Used Switch Case to Handle The Colors Based on Title
     switch (title) {
-      case "Placed":
+      case "placedOrders":
         return styles.placed;
-      case "In Progress":
+      case "inProgressOrders":
         return styles.inProgress;
-      case "Completed":
+      case "completedOrders":
         return styles.completed;
       default:
         return styles.inProgress;
     }
   };
-  // Memoize the filteredOrders variable
-  //Used Switch Case to Handle The orders Based on Order Status Previously three different components were made
-  //each having its own filter which was overhead so implemented this solution
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      switch (title) {
-        case "Placed":
-          return order.status === "Placed";
-        case "In Progress":
-          return order.status === "In-progress";
-        case "Completed":
-          return order.status === "Completed";
-        default:
-          return true;
+
+  useEffect(() => {
+    const handleTouchMoveEvent = (e) => {
+      if (isDragging) {
+        handleTouchMove(e);
       }
-    });
-  }, [title, orders]);
+    };
+
+    window.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
+
+    return () => {
+      window.removeEventListener('touchmove', handleTouchMoveEvent);
+    };
+  }, [isDragging]);
 
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
-      <Droppable droppableId={droppableId}>
-        {(provided) => (
-            <Grid2 size={{xs: 12, sm: 4, md: 3}}>
+      <Grid2 container justifyContent="center" spacing={2} sx={{paddingY: '1rem', height: '100%', width: '100%', paddingX: '1rem'}}>
+        {Object.entries(lists).map(([listName, items]) => (
+            <Grid2
+                size={{xs: 12, sm: 4, md: 3}}
+                key={listName}
+                id={listName}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(listName)}
+                onTouchEnd={handleTouchEnd}
+            >
               <Card className={`${styles.ordersColumn} `}>
-                <Box className={`${styles.ordersHeader} ${getStatusColor(title)}`}>
+                <Box className={`${styles.ordersHeader} ${getStatusColor(listName)}`}>
                   <Typography className={`${styles.titleTypography}`} variant="h6">
-                    {title}
+                    {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
                   </Typography>
                 </Box>
-                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)', height: '100%'}} ref={provided.innerRef}{...provided.droppableProps}>
-                  {filteredOrders.map((order, index) => (
-                      <Draggable
-                          key={index}
-                          draggableId={order.id.toString()}
-                          index={index}
+                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)', height: '100%'}} >
+                  {items.map((order) => (
+                      <Card
+                          className={`${styles.orderCard}`}
+                          key={order.id}
+                          draggable
+                          onDragStart={() => handleDragStart(order, listName)}
+                          onDragEnd={() => {
+                            setDraggedItem(null);
+                            setStartTouchPosition({ x: 0, y: 0 });
+                          }}
+                          onTouchStart={(e) => handleTouchStart(order, listName, e)}
+                          onTouchMove={handleTouchMove}
+                          ref={el => itemRefs.current[order.id] = el}
                       >
-                        {(provided, snapshot) => (
-                            <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                            >
-                              <Card
-                                  className={`${styles.orderCard} ${
-                                      snapshot.isDragging ? styles.orderCardDragging : ""
-                                  }`}
-                              >
-                                <Box className={`${styles.orderDetails} ${getStatusColor(title)}`}>
-                                  {/* <Typography>{order?.table_name}</Typography> */}
-                                  <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
-                                    {order?.table_name
-                                        ? order.table_name
-                                        : order?.order_type
-                                            ? order.order_type
-                                            : null}
-                                  </Typography>
+                        <Box className={`${styles.orderDetails} ${getStatusColor(listName)}`}>
+                          {/* <Typography>{order?.table_name}</Typography> */}
+                          <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
+                            {order?.table_name
+                                ? order.table_name
+                                : order?.order_type
+                                    ? order.order_type
+                                    : null}
+                          </Typography>
 
-                                  <Typography variant="subtitle2">
-                                    {order.order_time}
-                                  </Typography>
-                                </Box>
+                          <Typography variant="subtitle2">
+                            {order.order_time}
+                          </Typography>
+                        </Box>
 
-                                {order.items.map((item, index) => (
-                                    <>
-                                      <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
-                                        <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
-                                        <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
-                                      </Stack>
-                                      <Divider />
-                                      {item?.orderOptions.map((item, index2) => (
-                                          <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
-                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                                {item.order_option_name}
-                                              </Typography>
-                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                                x{item.quantity}
-                                              </Typography>
-                                          </Stack>
-                                      ))}
-                                      <Divider />
-                                      <div className={`${styles.commentContainer}`}>
-                                        <Typography
-                                            variant="subtitle2"
-                                            sx={{ fontWeight: "bold" }}
-                                        >
-                                          {item?.comment}
-                                        </Typography>
-                                      </div>
-                                    </>
-                                ))}
-                              </Card>
-                            </div>
-                        )}
-                      </Draggable>
+                        {order.items.map((item, index) => (
+                            <>
+                              <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
+                                <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
+                                <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
+                              </Stack>
+                              <Divider />
+                              {item?.orderOptions.map((item, index2) => (
+                                  <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
+                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                      {item.order_option_name}
+                                    </Typography>
+                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                      x{item.quantity}
+                                    </Typography>
+                                  </Stack>
+                              ))}
+                              <Divider />
+                              <div className={`${styles.commentContainer}`}>
+                                <Typography
+                                    variant="subtitle2"
+                                    sx={{ fontWeight: "bold" }}
+                                >
+                                  {item?.comment}
+                                </Typography>
+                              </div>
+                            </>
+                        ))}
+                      </Card>
                   ))}
-                  {provided.placeholder}
                 </Stack>
               </Card>
             </Grid2>
-        )}
-      </Droppable>
+        ))}
+      </Grid2>
   );
 };
 export default AllOrders;
