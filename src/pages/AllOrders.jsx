@@ -186,7 +186,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
 
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
-      <Grid2 container justifyContent="center" spacing={{xs: 1, lg: 2}} sx={{padding: '1rem', height: '100%', width: '100%'}}>
+      <Grid2 container justifyContent="center" spacing={{xs: 1, lg: 2}} sx={{padding: '1rem', height: '100%', width: '100%', flexGrow: 1}}>
         {Object.entries(lists).map(([listName, items]) => (
             <Grid2
                 className={`${styles.ordersColumn} `}
