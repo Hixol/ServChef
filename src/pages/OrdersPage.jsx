@@ -249,10 +249,10 @@ const OrdersPage = () => {
       <>
         <AppBar position="sticky">
           <Toolbar sx={{backgroundColor: green[800], justifyContent: 'space-between'}}>
-            <Typography variant="h5" sx={{fontSize: '1.2rem', fontWeight: '800', color: 'white'}}>
+            <Typography variant="h5" sx={{fontSize: {xs: '1rem', md: '1.2rem'}, fontWeight: '800', color: 'white'}}>
               Welcome: {role}
             </Typography>
-            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'center', columnGap: '1rem'}}>
+            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'center', columnGap: {xs: '0.25rem', sm: '1rem'}}}>
               <Tooltip title="Notifications">
                 <IconButton size='small' color="inherit" aria-label="bell" onClick={handleClick}>
                   <Badge badgeContent={notificationData?.countNotification} color='primary' sx={{'& .MuiBadge-colorPrimary': {backgroundColor: orange[300], color: 'white'}}}>
@@ -298,7 +298,7 @@ const OrdersPage = () => {
           ))}
         </Menu>
 
-        <Stack sx={{alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', maxWidth: '100vw', width: '100vw'}}>
+        <Stack sx={{alignItems: 'center', justifyContent: 'center', minHeight: '100vh', maxWidth: ('calc(100vw - 0.75rem)'), width: '100vw'}}>
           {isLoading || isUpdating ? (
               <CircularProgress
                   size={50}

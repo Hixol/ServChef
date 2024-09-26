@@ -6,9 +6,13 @@
 }
 
 .ordersColumn {
+  display: flex;
+  flex-direction: column;
   border-radius: 0.5rem;
   border: 1px solid #c4c4c4;
-  height: 100%
+  align-items: stretch;
+  justify-content: stretch;
+  flex: 1;
 }
 
 .ordersHeader {
@@ -87,7 +91,7 @@
 }
 
 ::-webkit-scrollbar{
-  width: 8px
+  width: 12px
 }
 
 ::-webkit-scrollbar-thumb{

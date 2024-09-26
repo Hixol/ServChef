@@ -7,7 +7,6 @@ import LocationService from "../services/LocationService"; // Impoting CSS modul
 // Component for displaying all orders based on status
 
 const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
-  console.log("Orders", orders);
   const { placedOrders, inProgressOrders, completedOrders } = useMemo(() => {
     const placedOrders = [];
     const inProgressOrders = [];
@@ -187,7 +186,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
 
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
-      <Grid2 container justifyContent="center" spacing={2} sx={{paddingY: '1rem', height: '100%', width: '100%', paddingX: '1rem'}}>
+      <Grid2 container justifyContent="center" spacing={{xs: 1, lg: 2}} sx={{padding: '1rem', height: '100%', width: '100%'}}>
         {Object.entries(lists).map(([listName, items]) => (
             <Grid2
                 className={`${styles.ordersColumn} `}
@@ -203,7 +202,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                     {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
                   </Typography>
                 </Box>
-                <Stack sx={{padding: '0.5rem', height: 'calc(100vh - 156px)', overflowY: 'auto'}} >
+                <Stack sx={{padding: '0.5rem'}} >
                   {items.map((order) => (
                       <Card
                           className={`${styles.orderCard}`}
