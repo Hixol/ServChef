@@ -7,6 +7,7 @@ import LocationService from "../services/LocationService"; // Impoting CSS modul
 // Component for displaying all orders based on status
 
 const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
+  console.log("Orders", orders);
   const { placedOrders, inProgressOrders, completedOrders } = useMemo(() => {
     const placedOrders = [];
     const inProgressOrders = [];
@@ -38,6 +39,10 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   const [targetList, setTargetList] = useState('');
   const itemRefs = useRef({});
   const [startTouchPosition, setStartTouchPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setLists({placedOrders, inProgressOrders, completedOrders})
+  }, [orders]);
 
   const handleDragStart = (item, listName) => {
     setDraggedItem(item);
@@ -185,6 +190,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
       <Grid2 container justifyContent="center" spacing={2} sx={{paddingY: '1rem', height: '100%', width: '100%', paddingX: '1rem'}}>
         {Object.entries(lists).map(([listName, items]) => (
             <Grid2
+                className={`${styles.ordersColumn} `}
                 size={{xs: 12, sm: 4, md: 3}}
                 key={listName}
                 id={listName}
@@ -192,13 +198,12 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                 onDrop={() => handleDrop(listName)}
                 onTouchEnd={handleTouchEnd}
             >
-              <Card className={`${styles.ordersColumn} `}>
                 <Box className={`${styles.ordersHeader} ${getStatusColor(listName)}`}>
                   <Typography className={`${styles.titleTypography}`} variant="h6">
                     {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
                   </Typography>
                 </Box>
-                <Stack sx={{padding: '0.5rem', overflowY: 'auto', flexGrow: 1, maxHeight: 'calc(100vh - 156px)', height: '100%'}} >
+                <Stack sx={{padding: '0.5rem', height: 'calc(100vh - 156px)', overflowY: 'auto'}} >
                   {items.map((order) => (
                       <Card
                           className={`${styles.orderCard}`}
@@ -259,7 +264,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                       </Card>
                   ))}
                 </Stack>
-              </Card>
             </Grid2>
         ))}
       </Grid2>

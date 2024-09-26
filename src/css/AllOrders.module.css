@@ -40,8 +40,9 @@
   border: 1px solid #b3b3b3;
   border-radius: 8px;
   padding: 5px;
-  min-height: max-content;
+  min-height: fit-content;
   cursor: grab;
+  flex-shrink: 0;
 }
 
 .orderCardDragging {

@@ -295,7 +295,7 @@ const OrdersPage = () => {
           ))}
         </Menu>
 
-        <Stack sx={{alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', maxHeight: {xs: '100%', md: 'calc(100vh - 64px)'}, maxWidth: '100vw', overflow: {xs: 'auto', md: 'hidden'}, width: '100vw'}}>
+        <Stack sx={{alignItems: 'center', justifyContent: 'center', height: 'calc(100vh - 64px)', maxWidth: '100vw', width: '100vw'}}>
           {isLoading || isUpdating ? (
               <CircularProgress
                   size={50}

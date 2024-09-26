@@ -15,7 +15,7 @@ async function getAllPrinter() {
       {
         filter: "live_orders",
         sort: "ASC",
-        limit: 10,
+        limit: 100,
         page: 0,
         fortabs: true,
       },
