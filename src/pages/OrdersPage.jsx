@@ -298,19 +298,21 @@ const OrdersPage = () => {
           ))}
         </Menu>
 
-        <Stack sx={{alignItems: 'center', justifyContent: 'center', minHeight: '100vh', maxWidth: ('calc(100vw - 0.75rem)'), width: '100vw'}}>
-          {isLoading || isUpdating ? (
+        {isLoading || isUpdating ? (
+            <Stack sx={{alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 4rem)', maxWidth: ('calc(100vw - 0.75rem)'), width: '100vw'}}>
               <CircularProgress
                   size={50}
                   color="success"
                   aria-label="grid-loading"
               />
-          ) : (
-              <>
+            </Stack>
+        ) : (
+            <>
+              <Stack sx={{alignItems: 'center', justifyContent: 'start', minHeight: 'calc(100vh - 4rem)', maxWidth: ('calc(100vw - 0.75rem)'), width: '100vw'}}>
                 <AllOrders orders={orders} setOrders={setOrders} setIsUpdating={setIsUpdating} fetchData={fetchData} newRole={newRole} location={location}/>
-              </>
-          )}
-        </Stack>
+              </Stack>
+            </>
+        )}
 
         {/* Snackbar for displaying success messages */}
         <Snackbar
