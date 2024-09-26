@@ -66,6 +66,10 @@ const OrdersPage = () => {
       socket.on("Call_Waiter", () => {
         fetchNotifications();
       })
+
+      socket.on("refresh_orders", () => {
+        fetchDataAndNotifications();
+      })
     }
 
     fetchDataAndNotifications();
@@ -185,9 +189,8 @@ const OrdersPage = () => {
             });
             localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
           }
-        } else {
-          localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
         }
+        localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
         setOrders(formattedOrders);
       }
     } catch (error) {
