@@ -60,10 +60,17 @@ const OrdersPage = () => {
     if (socket) {
       socket.on("current_order", () => {
         console.log("Here1");
+        handleSnackbarOpen("New order received!");
+        notificationAudio.play().catch((error) => {
+          console.error("Error playing notification sound:", error);
+        });
         fetchDataAndNotifications();
       })
 
       socket.on("Call_Waiter", () => {
+        waiterAudio.play().catch((error) => {
+          console.error("Error playing waiter audio:", error);
+        });
         fetchNotifications();
       })
 
@@ -103,34 +110,16 @@ const OrdersPage = () => {
     );
     setNotificationData(notifications);
 
-    // Logic for handling new notifications
-    const oldNotificatonsCount = JSON.parse(localStorage.getItem("notificationsCount")) || 0;
-    const newNotificationsCount = notifications.countAllNotification;
-    if (oldNotificatonsCount !== 0) {
-      if (newNotificationsCount > oldNotificatonsCount) {
-        waiterAudio.play().catch((error) => {
-          console.error("Error playing waiter audio:", error);
-        });
-        const latestNotification = notifications.notificationList[0];
+    if (notifications && notifications.notificationList.length > 0) {
+      const latestNotification = notifications.notificationList[0];
 
-        if (latestNotification.not_type === "Call_Waiter") {
-          handleSnackbarOpen(
-              `${latestNotification.message} on ${latestNotification.table_name}`
-          );
-        } else {
-          handleSnackbarOpen(`${latestNotification.message}`);
-        }
-
-        localStorage.setItem(
-            "notificationsCount",
-            JSON.stringify(newNotificationsCount)
+      if (latestNotification.not_type === "Call_Waiter") {
+        handleSnackbarOpen(
+            `${latestNotification.message} on ${latestNotification.table_name}`
         );
+      } else {
+        handleSnackbarOpen(`${latestNotification.message}`);
       }
-    } else {
-      localStorage.setItem(
-          "notificationsCount",
-          JSON.stringify(newNotificationsCount)
-      );
     }
   };
   // Function to fetch user role
@@ -180,17 +169,6 @@ const OrdersPage = () => {
         const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
         console.log(newOrdersCount, oldOrdersCount);
-        if (oldOrdersCount !== 0) {
-          if (newOrdersCount > oldOrdersCount) {
-            console.log(newOrdersCount, oldOrdersCount, "here2");
-            handleSnackbarOpen("New order received!");
-            notificationAudio.play().catch((error) => {
-              console.error("Error playing notification sound:", error);
-            });
-            localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
-          }
-        }
-        localStorage.setItem("ordersCount", JSON.stringify(newOrdersCount));
         setOrders(formattedOrders);
       }
     } catch (error) {

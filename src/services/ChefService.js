@@ -14,7 +14,7 @@ async function getAllPrinter() {
       `${CONSTANTS.API_URL}${URLS.GETPRINTERDATA}`,
       {
         filter: "live_orders",
-        sort: "DESC",
+        sort: "ASC",
         limit: 100,
         page: 0,
         fortabs: true,
