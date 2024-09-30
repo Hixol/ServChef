@@ -170,6 +170,8 @@ const OrdersPage = () => {
         const newOrdersCount = response.count;
         console.log(newOrdersCount, oldOrdersCount);
         setOrders(formattedOrders);
+      } else {
+        setOrders([]);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
