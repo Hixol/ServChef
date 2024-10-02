@@ -59,13 +59,14 @@ const OrdersPage = () => {
 
     if (socket) {
       socket.on("current_order", (res) => {
+        console.log("Order Emitted")
         socket.emit('get_order_detail', {
           order_id: res.order_id
         })
       })
 
-      socket.on("Call_Waiter", () => {
-        waiterAudio.play().catch((error) => {
+      socket.on("Call_Waiter", async () => {
+        await waiterAudio.play().catch((error) => {
           console.error("Error playing waiter audio:", error);
         });
         fetchNotifications();
@@ -75,9 +76,10 @@ const OrdersPage = () => {
         fetchDataAndNotifications();
       })
 
-      socket.on('order', () => {
+      socket.on('order', async () => {
+        console.log("Order Emitted")
         handleSnackbarOpen("New order received!");
-        notificationAudio.play().catch((error) => {
+        await notificationAudio.play().catch((error) => {
           console.error("Error playing notification sound:", error);
         });
         fetchDataAndNotifications();
