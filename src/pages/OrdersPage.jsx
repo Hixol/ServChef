@@ -140,7 +140,7 @@ const OrdersPage = () => {
     try {
       const response = await ChefService.getAllPrinter();
       if (response.rows.length > 0) {
-
+        const combine_items = response.rows[0].Location.combine_items;
         const formattedOrders = response.rows.map((row) => ({
 
           id: row.order_id,
@@ -153,6 +153,7 @@ const OrdersPage = () => {
           order_time: row.order_time,
           status: row.PrinterStatus ? row.PrinterStatus[newRole] : null,
           items: row.OrderMenus.map((menu) => ({
+            id: menu.menu_id,
             name: menu.name,
             quantity: menu.quantity,
             price: menu.price,
@@ -160,6 +161,7 @@ const OrdersPage = () => {
             options: menu.option_values,
             comment: menu.comment,
             orderOptions: menu.OrderOptions.map((option) => ({
+              menu_option_value_id: option.menu_option_value_id,
               order_option_id: option.order_option_id,
               order_option_name: option.order_option_name,
               order_option_price: option.order_option_price,
@@ -173,6 +175,44 @@ const OrdersPage = () => {
             })),
           })),
         }));
+        console.log("Formatted Orders", formattedOrders);
+
+        if (combine_items) {
+          for (let i = 0; i < formattedOrders.length; i++) {
+            let combinedItems = [];
+            for (let j = 0; j < formattedOrders[i].items.length; j++) {
+              let flag = false, itemIndex = -1;
+              for (let k = 0; k < combinedItems.length; k++) {
+                if (formattedOrders[i].items[j].id === combinedItems[k].id) {
+                  combinedItems[k].quantity = combinedItems[k].quantity + formattedOrders[i].items[j].quantity;
+                  flag = true;
+                  itemIndex = k;
+                  break;
+                }
+              }
+
+              if (flag) {
+                for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
+                  flag = false;
+                  for (let l = 0; l < combinedItems[itemIndex].orderOptions.length; l++) {
+                    if (formattedOrders[i].items[j].orderOptions[k].menu_option_value_id === combinedItems[itemIndex].orderOptions[l].menu_option_value_id) {
+                      combinedItems[itemIndex].orderOptions[l].quantity = combinedItems[itemIndex].orderOptions[l].quantity + formattedOrders[i].items[j].orderOptions[k].quantity;
+                      flag = true;
+                    }
+                  }
+                  if (!flag) {
+                    combinedItems[itemIndex].orderOptions.push(formattedOrders[i].items[j].orderOptions[k]);
+                  }
+                }
+              } else {
+                combinedItems.push(formattedOrders[i].items[j]);
+              }
+            }
+            console.log("Combined Items", combinedItems);
+            formattedOrders[i].items = combinedItems;
+          }
+        }
+
         const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
         const newOrdersCount = response.count;
         console.log(newOrdersCount, oldOrdersCount);

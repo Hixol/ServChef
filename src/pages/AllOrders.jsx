@@ -197,72 +197,75 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                 onDrop={() => handleDrop(listName)}
                 onTouchEnd={handleTouchEnd}
             >
-                <Box className={`${styles.ordersHeader} ${getStatusColor(listName)}`}>
-                  <Typography className={`${styles.titleTypography}`} variant="h6">
-                    {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
-                  </Typography>
-                </Box>
-                <Stack sx={{padding: '0.5rem'}} >
-                  {items.map((order) => (
-                      <Card
-                          className={`${styles.orderCard}`}
-                          key={order.id}
-                          draggable
-                          onDragStart={() => handleDragStart(order, listName)}
-                          onDragEnd={() => {
-                            setDraggedItem(null);
-                            setStartTouchPosition({ x: 0, y: 0 });
-                          }}
-                          onTouchStart={(e) => handleTouchStart(order, listName, e)}
-                          onTouchMove={handleTouchMove}
-                          ref={el => itemRefs.current[order.id] = el}
-                      >
-                        <Box className={`${styles.orderDetails} ${getStatusColor(listName)}`}>
-                          {/* <Typography>{order?.table_name}</Typography> */}
-                          <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
-                            {order?.table_name
-                                ? order.table_name
-                                : order?.order_type
-                                    ? order.order_type
-                                    : null}
-                          </Typography>
+              <Box className={`${styles.ordersHeader} ${getStatusColor(listName)}`}>
+                <Typography className={`${styles.titleTypography}`} variant="h6">
+                  {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
+                </Typography>
+              </Box>
+              <Stack sx={{padding: '0.5rem'}} >
+                {items.map((order) => (
+                    <Card
+                        className={`${styles.orderCard}`}
+                        key={order.id}
+                        draggable
+                        onDragStart={() => handleDragStart(order, listName)}
+                        onDragEnd={() => {
+                          setDraggedItem(null);
+                          setStartTouchPosition({ x: 0, y: 0 });
+                        }}
+                        onTouchStart={(e) => handleTouchStart(order, listName, e)}
+                        onTouchMove={handleTouchMove}
+                        ref={el => itemRefs.current[order.id] = el}
+                    >
+                      <Box className={`${styles.orderDetails} ${getStatusColor(listName)}`}>
+                        {/* <Typography>{order?.table_name}</Typography> */}
+                        <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
+                          {order?.table_name
+                              ? order.table_name
+                              : order?.order_type
+                                  ? order.order_type
+                                  : null}
+                        </Typography>
 
-                          <Typography variant="subtitle2">
+                        <Stack sx={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
+                          <Typography variant='h6' sx={{fontSize: '0.8rem'}}>{order.order_date}</Typography>
+                          <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
                             {order.order_time}
                           </Typography>
-                        </Box>
+                        </Stack>
+                      </Box>
 
-                        {order.items.map((item, index) => (
-                            <>
-                              <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
-                                <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
-                                <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
-                              </Stack>
-                              <Divider />
-                              {item?.orderOptions.map((item, index2) => (
-                                  <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
-                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                      {item.order_option_name}
-                                    </Typography>
-                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                      x{item.quantity}
-                                    </Typography>
-                                  </Stack>
-                              ))}
-                              <Divider />
-                              <div className={`${styles.commentContainer}`}>
-                                <Typography
-                                    variant="subtitle2"
-                                    sx={{ fontWeight: "bold" }}
-                                >
-                                  {item?.comment}
-                                </Typography>
-                              </div>
-                            </>
-                        ))}
-                      </Card>
-                  ))}
-                </Stack>
+                      {order.items.map((item, index) => (
+                          <>
+                            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
+                              <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
+                              <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
+                            </Stack>
+                            <Divider />
+                            {item?.orderOptions.map((item, index2) => (
+                                <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
+                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                    {item.order_option_name}
+                                  </Typography>
+                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                    x{item.quantity}
+                                  </Typography>
+                                </Stack>
+                            ))}
+                            <Divider />
+                            <div className={`${styles.commentContainer}`}>
+                              <Typography
+                                  variant="subtitle2"
+                                  sx={{ fontWeight: "bold" }}
+                              >
+                                {item?.comment}
+                              </Typography>
+                            </div>
+                          </>
+                      ))}
+                    </Card>
+                ))}
+              </Stack>
             </Grid2>
         ))}
       </Grid2>
