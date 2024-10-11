@@ -2,7 +2,7 @@
 const DEV_CONSTANTS = {
   BASE_URL: "http://localhost:3002",
   PANEL_URL: "http://localhost/restaurants",
-  API_URL: "http://192.168.100.201:4000",
+  API_URL: "http://localhost:4000",
   WEB_URL: "http://localhost:3002",
   SOCKET_URL: "https://server.servall.co.uk",
   REQUEST_HEADERS: {

@@ -139,6 +139,7 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
+      console.log("Response Rows", response.rows);
       if (response.rows.length > 0) {
         const combine_items = response.rows[0].Location.combine_items;
         const formattedOrders = response.rows.map((row) => ({
@@ -160,6 +161,7 @@ const OrdersPage = () => {
             subtotal: menu.subtotal,
             options: menu.option_values,
             comment: menu.comment,
+            menu_type: menu.menu_type,
             orderOptions: menu.OrderOptions.map((option) => ({
               menu_option_value_id: option.menu_option_value_id,
               order_option_id: option.order_option_id,

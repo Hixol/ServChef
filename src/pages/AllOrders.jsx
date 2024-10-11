@@ -2,7 +2,8 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {Card, Typography, Box, Divider, Grid2, Stack} from "@mui/material";
 import styles from "../css/AllOrders.module.css";
 import ChefService from "../services/ChefService";
-import LocationService from "../services/LocationService"; // Impoting CSS module
+import LocationService from "../services/LocationService";
+import {useAuthContext} from "../context/authContext"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
@@ -11,6 +12,8 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
     const placedOrders = [];
     const inProgressOrders = [];
     const completedOrders = [];
+
+    console.log("newROle", newRole);
 
     orders.forEach((order) => {
       switch (order.status) {
@@ -38,6 +41,8 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   const [targetList, setTargetList] = useState('');
   const itemRefs = useRef({});
   const [startTouchPosition, setStartTouchPosition] = useState({ x: 0, y: 0 });
+
+  console.log("newROle", newRole, orders);
 
   useEffect(() => {
     setLists({placedOrders, inProgressOrders, completedOrders})
@@ -239,7 +244,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                           <>
                             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
                               <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
-                              <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>
+                              {(newRole === 'kitchen_manager' && item.menu_type === 'kitchen' || newRole === 'bar_manager' && item.menuType === 'bar' || newRole === 'dessert_manager' && item.menuType === 'dessert') && <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>}
                             </Stack>
                             <Divider />
                             {item?.orderOptions.map((item, index2) => (
