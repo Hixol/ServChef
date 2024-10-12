@@ -244,7 +244,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                           <>
                             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
                               <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
-                              {(newRole === 'kitchen_manager' && item.menu_type === 'kitchen' || newRole === 'bar_manager' && item.menuType === 'bar' || newRole === 'dessert_manager' && item.menuType === 'dessert') && <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>}
+                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) && <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>}
                             </Stack>
                             <Divider />
                             {item?.orderOptions.map((item, index2) => (
