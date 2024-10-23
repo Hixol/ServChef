@@ -272,6 +272,10 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                                       Item Options: {item.orderOptions.length}
                                     </Typography>
                                   </Stack>
+                                // :
+                                //   <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                //     Item Options: {item.orderOptions.length}
+                                //   </Typography>
                               }
                             </Stack>
                             <Divider />
