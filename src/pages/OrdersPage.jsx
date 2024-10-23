@@ -139,7 +139,6 @@ const OrdersPage = () => {
   const fetchData = async () => {
     try {
       const response = await ChefService.getAllPrinter();
-      console.log("Response Rows", response.rows);
       if (response.rows.length > 0) {
         const combine_items = response.rows[0].Location.combine_items;
         const formattedOrders = response.rows.map((row) => ({
@@ -177,7 +176,43 @@ const OrdersPage = () => {
             })),
           })),
         }));
-        console.log("Formatted Orders", formattedOrders);
+
+        // if (combine_items) {
+        // for (let i = 0; i < formattedOrders.length; i++) {
+        //   let combinedItems = [];
+        //   for (let j = 0; j < formattedOrders[i].items.length; j++) {
+        //     let flag = false, itemIndex = -1;
+        //     for (let k = 0; k < combinedItems.length; k++) {
+        //       if (formattedOrders[i].items[j].id === combinedItems[k].id) {
+        //         combinedItems[k].quantity = combinedItems[k].quantity + formattedOrders[i].items[j].quantity;
+        //         flag = true;
+        //         itemIndex = k;
+        //         break;
+        //       }
+        //     }
+        //
+        //     if (flag) {
+        //       for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
+        //         flag = false;
+        //         for (let l = 0; l < combinedItems[itemIndex].orderOptions.length; l++) {
+        //           if (formattedOrders[i].items[j].orderOptions[k].menu_option_value_id === combinedItems[itemIndex].orderOptions[l].menu_option_value_id) {
+        //             combinedItems[itemIndex].orderOptions[l].quantity = combinedItems[itemIndex].orderOptions[l].quantity + formattedOrders[i].items[j].orderOptions[k].quantity;
+        //
+        //             flag = true;
+        //           }
+        //         }
+        //         if (!flag) {
+        //           combinedItems[itemIndex].orderOptions.push(formattedOrders[i].items[j].orderOptions[k]);
+        //         }
+        //       }
+        //     } else {
+        //       combinedItems.push(formattedOrders[i].items[j]);
+        //     }
+        //   }
+        //   console.log("Combined Items", combinedItems);
+        //   formattedOrders[i].items = combinedItems;
+        // }
+        // } //this will combine the sub variants, at the moment only main items are combining but not the variants.
 
         if (combine_items) {
           for (let i = 0; i < formattedOrders.length; i++) {
@@ -194,23 +229,21 @@ const OrdersPage = () => {
               }
 
               if (flag) {
+                let itemPrevNumber = -1;
                 for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
-                  flag = false;
-                  for (let l = 0; l < combinedItems[itemIndex].orderOptions.length; l++) {
-                    if (formattedOrders[i].items[j].orderOptions[k].menu_option_value_id === combinedItems[itemIndex].orderOptions[l].menu_option_value_id) {
-                      combinedItems[itemIndex].orderOptions[l].quantity = combinedItems[itemIndex].orderOptions[l].quantity + formattedOrders[i].items[j].orderOptions[k].quantity;
-                      flag = true;
-                    }
+                  if (k === 0) {
+                    itemPrevNumber = combinedItems[itemIndex].orderOptions[combinedItems[itemIndex].orderOptions.length - 1].itemNumber + 1
                   }
-                  if (!flag) {
-                    combinedItems[itemIndex].orderOptions.push(formattedOrders[i].items[j].orderOptions[k]);
-                  }
+                  formattedOrders[i].items[j].orderOptions[k].itemNumber = itemPrevNumber;
+                  combinedItems[itemIndex].orderOptions.push(formattedOrders[i].items[j].orderOptions[k]);
                 }
               } else {
+                for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
+                  formattedOrders[i].items[j].orderOptions[k].itemNumber = 1;
+                }
                 combinedItems.push(formattedOrders[i].items[j]);
               }
             }
-            console.log("Combined Items", combinedItems);
             formattedOrders[i].items = combinedItems;
           }
         }

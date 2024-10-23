@@ -250,7 +250,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                             {item?.orderOptions.map((item, index2) => (
                                 <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
                                   <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                    {item.order_option_name}
+                                    {item.itemNumber} {item.order_option_name}
                                   </Typography>
                                   <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
                                     x{item.quantity}
