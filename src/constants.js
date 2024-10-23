@@ -13,11 +13,11 @@ const DEV_CONSTANTS = {
 };
 //PRODUCTION CONSTANTS
 const PROD_CONSTANTS = {
-  BASE_URL: "https://app.servall.be",
+  BASE_URL: "https://app.servall.co.uk",
   PANEL_URL: "",
-  API_URL: "https://server.servall.be",
-  WEB_URL: "https://app.servall.be",
-  SOCKET_URL: "https://server.servall.be",
+  API_URL: "https://server.servall.co.uk",
+  WEB_URL: "https://app.servall.co.uk",
+  SOCKET_URL: "https://server.servall.co.uk",
   REQUEST_HEADERS: {
     Accept: "application/json",
     "Content-Type": "application/json",
