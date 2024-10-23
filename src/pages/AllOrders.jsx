@@ -263,7 +263,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                           <>
                             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
                               <Typography variant="subtitle2" fontWeight={600} sx={{color: getColor(listName)}}>{item.name}</Typography>
-                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) ?
+                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) &&
                                   <Stack>
                                     <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
                                       Items: {item.quantity}
@@ -271,10 +271,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                                     <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
                                       Item Options: {item.orderOptions.length}
                                     </Typography>
-                                  </Stack> :
-                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                    Item Options: {item.orderOptions.length}
-                                  </Typography>
+                                  </Stack>
                               }
                             </Stack>
                             <Divider />
