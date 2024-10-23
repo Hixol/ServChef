@@ -3,7 +3,8 @@ import {Card, Typography, Box, Divider, Grid2, Stack} from "@mui/material";
 import styles from "../css/AllOrders.module.css";
 import ChefService from "../services/ChefService";
 import LocationService from "../services/LocationService";
-import {useAuthContext} from "../context/authContext"; // Impoting CSS module
+import {useAuthContext} from "../context/authContext";
+import dayjs from "dayjs"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
@@ -12,8 +13,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
     const placedOrders = [];
     const inProgressOrders = [];
     const completedOrders = [];
-
-    console.log("newROle", newRole);
 
     orders.forEach((order) => {
       switch (order.status) {
@@ -41,8 +40,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   const [targetList, setTargetList] = useState('');
   const itemRefs = useRef({});
   const [startTouchPosition, setStartTouchPosition] = useState({ x: 0, y: 0 });
-
-  console.log("newROle", newRole, orders);
 
   useEffect(() => {
     setLists({placedOrders, inProgressOrders, completedOrders})
@@ -189,6 +186,27 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
     };
   }, [isDragging]);
 
+  const getColor = (status) => {
+    if (status === "placedOrders") {
+      return '#00557A'
+    } else if (status === 'inProgressOrders') {
+      return '#006023'
+    } else if (status === 'completedOrders') {
+      return '#985304'
+    }
+  }
+
+  const getBackgroundColor = (status) => {
+    console.log("Status", status);
+    if (status === "placedOrders") {
+      return '#F2F9FF'
+    } else if (status === 'inProgressOrders') {
+      return '#f8fdff'
+    } else if (status === 'completedOrders') {
+      return '#FFFCEB'
+    }
+  }
+
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
       <Grid2 container justifyContent="center" spacing={{xs: 1, lg: 2}} sx={{padding: '1rem', height: '100%', width: '100%', flexGrow: 1}}>
@@ -203,7 +221,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                 onTouchEnd={handleTouchEnd}
             >
               <Box className={`${styles.ordersHeader} ${getStatusColor(listName)}`}>
-                <Typography className={`${styles.titleTypography}`} variant="h6">
+                <Typography className={`${styles.titleTypography}`} variant="h6" sx={{fontSize: '1.15rem'}}>
                   {listName === "placedOrders" ? "Placed" : listName === "inProgressOrders" ? "In-Progress" : "Completed"}
                 </Typography>
               </Box>
@@ -211,6 +229,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                 {items.map((order) => (
                     <Card
                         className={`${styles.orderCard}`}
+                        sx={{backgroundColor: getBackgroundColor(listName)}}
                         key={order.id}
                         draggable
                         onDragStart={() => handleDragStart(order, listName)}
@@ -233,9 +252,9 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                         </Typography>
 
                         <Stack sx={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
-                          <Typography variant='h6' sx={{fontSize: '0.8rem'}}>{order.order_date}</Typography>
+                          <Typography variant='h6' sx={{fontSize: '0.8rem'}}>{dayjs(order.order_date).format('ddd, MMM D, YYYY')}</Typography>
                           <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                            {order.order_time}
+                            {dayjs(`${order.order_date} ${order.order_time}`).format('HH:mm A')}
                           </Typography>
                         </Stack>
                       </Box>
@@ -243,20 +262,48 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                       {order.items.map((item, index) => (
                           <>
                             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
-                              <Typography variant="subtitle2" fontWeight={600}>{item.name}</Typography>
-                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) && <Typography variant="subtitle2" fontWeight={600}>x{item.quantity}</Typography>}
+                              <Typography variant="subtitle2" fontWeight={600} sx={{color: getColor(listName)}}>{item.name}</Typography>
+                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) ?
+                                  <Stack>
+                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                      Items: {item.quantity}
+                                    </Typography>
+                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                      Item Options: {item.orderOptions.length}
+                                    </Typography>
+                                  </Stack> :
+                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                    Item Options: {item.orderOptions.length}
+                                  </Typography>
+                              }
                             </Stack>
                             <Divider />
-                            {item?.orderOptions.map((item, index2) => (
-                                <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
-                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                    {item.itemNumber} {item.order_option_name}
-                                  </Typography>
-                                  <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                    x{item.quantity}
-                                  </Typography>
-                                </Stack>
-                            ))}
+                            <Stack direction='row'>
+                              {item.orderOptions.length > 0 &&
+                                  <>
+                                    <Stack sx={{width: '0.85rem', borderTopRightRadius: '0.75rem', borderBottomRightRadius: '0.75rem'}} className={`${getStatusColor(listName)}`} />
+                                    <Stack sx={{paddingY: '1rem', flex: 1}}>
+                                      {item?.orderOptions.map((item, index2) => (
+                                          <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
+                                            <Stack direction='row' sx={{alignItems: 'center', columnGap: '0.5rem'}}>
+                                              <Typography variant="subtitle2" sx={{padding: '0.0rem 0.25rem', color: 'white', fontSize: '0.75rem', borderRadius: '0.25rem', backgroundColor: 'black'}}>
+                                                {item.itemNumber}
+                                              </Typography>
+                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                                {item.order_option_name}
+                                              </Typography>
+                                            </Stack>
+                                            <Stack>
+                                              <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                                x{item.quantity}
+                                              </Typography>
+                                            </Stack>
+                                          </Stack>
+                                      ))}
+                                    </Stack>
+                                  </>
+                              }
+                            </Stack>
                             <Divider />
                             <div className={`${styles.commentContainer}`}>
                               <Typography

@@ -1,6 +1,6 @@
 /* AllOrders.module.css */
 .titleTypography {
-  color: black;
+  color: white;
   padding: 3px 0;
   text-align: center;
 }
@@ -62,7 +62,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: white;
 }
+
 .timeContainer {
   display: flex;
   flex-direction: column;
@@ -79,15 +81,15 @@
 }
 
 .placed {
-  background-color: #ffd701;
+  background-color: #01A4E5;
 }
 
 .inProgress {
-  background-color: #28c76f;
+  background-color: #4CB060;
 }
 
 .completed {
-  background-color: #b8c2cc;
+  background-color: #D28400;
 }
 
 ::-webkit-scrollbar{

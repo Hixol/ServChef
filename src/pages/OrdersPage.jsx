@@ -311,7 +311,7 @@ const OrdersPage = () => {
       <>
         <AppBar position="sticky">
           <Toolbar sx={{backgroundColor: green[800], justifyContent: 'space-between'}}>
-            <Typography variant="h5" sx={{fontSize: {xs: '1rem', md: '1.2rem'}, fontWeight: '800', color: 'white'}}>
+            <Typography variant="h5" sx={{fontSize: {xs: '1rem', md: '1.15rem'}, fontWeight: '500', color: 'white'}}>
               Welcome: {role}
             </Typography>
             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'center', columnGap: {xs: '0.25rem', sm: '1rem'}}}>
