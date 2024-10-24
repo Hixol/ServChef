@@ -4,7 +4,8 @@ import styles from "../css/AllOrders.module.css";
 import ChefService from "../services/ChefService";
 import LocationService from "../services/LocationService";
 import {useAuthContext} from "../context/authContext";
-import dayjs from "dayjs"; // Impoting CSS module
+import dayjs from "dayjs";
+import {blue, brown, green, lime, orange, pink, purple, red, teal, yellow} from "@mui/material/colors"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
@@ -207,6 +208,12 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
     }
   }
 
+  const getBgColor = (itemNumber) => {
+    const colors = ['black', green[500], blue[500], yellow[500], purple[500], orange[500], teal[500], pink[500], lime[500], brown[500]]
+    const index = (itemNumber - 1) % 10;
+    return colors[index];
+  }
+
   // Rendering JSX using CSS modules for styling previously inline styling was being used
   return (
       <Grid2 container justifyContent="center" spacing={{xs: 1, lg: 2}} sx={{padding: '1rem', height: '100%', width: '100%', flexGrow: 1}}>
@@ -252,8 +259,8 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                         </Typography>
 
                         <Stack sx={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
-                          <Typography variant='h6' sx={{fontSize: '0.8rem'}}>{dayjs(order.order_date).format('ddd, MMM D, YYYY')}</Typography>
-                          <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                          <Typography variant='h6' sx={{fontSize: '0.7rem'}}>{dayjs(order.order_date).format('ddd, MMM D, YYYY')}</Typography>
+                          <Typography variant="subtitle2" sx={{fontSize: '0.65rem'}}>
                             {dayjs(`${order.order_date} ${order.order_time}`).format('HH:mm A')}
                           </Typography>
                         </Stack>
@@ -263,22 +270,23 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                           <>
                             <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
                               <Typography variant="subtitle2" fontWeight={600} sx={{color: getColor(listName)}}>{item.name}</Typography>
-                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) ?
+                              {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) &&
                                   <Stack>
-                                    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                      Items: {item.quantity}
+                                    <Typography variant="subtitle2" sx={{color: getColor(listName), fontWeight: '600'}}>
+                                      x{item.quantity}
                                     </Typography>
-                                    {item.orderOptions.length > 0 &&
-                                        <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                          Item Options: {item.orderOptions.length}
-                                        </Typography>}
-                                  </Stack> :
-                                  (
-                                    item.orderOptions.length > 0 &&
-                                        <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
-                                          Item Options: {item.orderOptions.length}
-                                        </Typography>
-                                  )
+                                    {/*{item.orderOptions.length > 0 &&*/}
+                                    {/*    <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>*/}
+                                    {/*      Item Options: {item.orderOptions.length}*/}
+                                    {/*    </Typography>}*/}
+                                  </Stack>
+                                // :
+                                //   (
+                                //     item.orderOptions.length > 0 &&
+                                //         <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
+                                //           Item Options: {item.orderOptions.length}
+                                //         </Typography>
+                                //   ) uncomment this and upper line to show total item options
                               }
                             </Stack>
                             <Divider />
@@ -290,7 +298,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                                       {item?.orderOptions.map((item, index2) => (
                                           <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between',   padding: '0.0625rem 0.5rem'}} key={index2}>
                                             <Stack direction='row' sx={{alignItems: 'center', columnGap: '0.5rem'}}>
-                                              <Typography variant="subtitle2" sx={{padding: '0.0rem 0.25rem', color: 'white', fontSize: '0.75rem', borderRadius: '0.25rem', backgroundColor: 'black'}}>
+                                              <Typography variant="subtitle2" sx={{padding: '0.0rem 0.25rem', color: 'white', fontSize: '0.75rem', borderRadius: '0.25rem', backgroundColor: getBgColor(item.itemNumber)}}>
                                                 {item.itemNumber}
                                               </Typography>
                                               <Typography variant="subtitle2" sx={{fontSize: '0.75rem'}}>
