@@ -4,7 +4,7 @@ const DEV_CONSTANTS = {
   PANEL_URL: "http://localhost/restaurants",
   API_URL: "http://localhost:4000",
   WEB_URL: "http://localhost:3002",
-  SOCKET_URL: "https://server.servall.co.uk",
+  SOCKET_URL: "http://localhost:4000",
   REQUEST_HEADERS: {
     Accept: "application/json",
     "Content-Type": "application/json",

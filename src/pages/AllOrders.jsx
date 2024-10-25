@@ -198,7 +198,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   }
 
   const getBackgroundColor = (status) => {
-    console.log("Status", status);
     if (status === "placedOrders") {
       return '#F2F9FF'
     } else if (status === 'inProgressOrders') {
@@ -317,14 +316,14 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                               }
                             </Stack>
                             <Divider />
-                            <div className={`${styles.commentContainer}`}>
+                            <Box className={`${styles.commentContainer}`}>
                               <Typography
                                   variant="subtitle2"
                                   sx={{ fontWeight: "bold" }}
                               >
                                 {item?.comment}
                               </Typography>
-                            </div>
+                            </Box>
                           </>
                       ))}
                     </Card>

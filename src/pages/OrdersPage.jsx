@@ -50,7 +50,7 @@ const OrdersPage = () => {
     setUser(null);
     navigate("login");
   };
-  // Effect hook for fetching data and notifications with timer 3 secs for data & 5 secs for notifications
+
   useEffect(() => {
     const fetchDataAndNotifications = async () => {
       await fetchData();
@@ -59,7 +59,6 @@ const OrdersPage = () => {
 
     if (socket) {
       socket.on("current_order", (res) => {
-        console.log("Order Emitted")
         socket.emit('get_order_detail', {
           order_id: res.order_id
         })
@@ -77,7 +76,6 @@ const OrdersPage = () => {
       })
 
       socket.on('order', async () => {
-        console.log("Order Emitted")
         handleSnackbarOpen("New order received!");
         await notificationAudio.play().catch((error) => {
           console.error("Error playing notification sound:", error);
@@ -248,9 +246,6 @@ const OrdersPage = () => {
           }
         }
 
-        const oldOrdersCount = JSON.parse(localStorage.getItem("ordersCount")) || 0;
-        const newOrdersCount = response.count;
-        console.log(newOrdersCount, oldOrdersCount);
         setOrders(formattedOrders);
       } else {
         setOrders([]);
