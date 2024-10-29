@@ -25,8 +25,8 @@ export const SocketContextProvider = ({ children }) => {
                     location_id: user.role[0].staff_location_id
                 },
                 reconnection: true,
-                reconnectionDelay: 5000,
-                reconnectionDelayMax: 10000,
+                reconnectionDelay: 2000,
+                reconnectionDelayMax: 3000,
                 reconnectionAttempts: 1000,
             });
 
