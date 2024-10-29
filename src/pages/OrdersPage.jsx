@@ -227,6 +227,7 @@ const OrdersPage = () => {
               }
 
               if (flag) {
+                flag = false;
                 let itemPrevNumber = -1;
                 for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
                   if (k === 0) {
@@ -246,6 +247,7 @@ const OrdersPage = () => {
           }
         }
 
+        // console.log("Formatted Orders", formattedOrders);
         setOrders(formattedOrders);
       } else {
         setOrders([]);
