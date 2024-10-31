@@ -255,7 +255,6 @@ const OrdersPage = () => {
                 combinedItems.push(formattedOrders[i].items[j]);
               }
             }
-            console.log("combinedItems", combinedItems);
             formattedOrders[i].items = combinedItems;
           }
         }
