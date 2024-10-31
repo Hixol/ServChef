@@ -75,8 +75,9 @@ const OrdersPage = () => {
         fetchDataAndNotifications();
       })
 
-      socket.on('order', async () => {
+      socket.on('order', async (data) => {
         handleSnackbarOpen("New order received!");
+        console.log("Data", data);
         await notificationAudio.play().catch((error) => {
           console.error("Error playing notification sound:", error);
         });
@@ -152,6 +153,7 @@ const OrdersPage = () => {
           status: row.PrinterStatus ? row.PrinterStatus[newRole] : null,
           items: row.OrderMenus.map((menu) => ({
             id: menu.menu_id,
+            order_menu_id: menu.order_menu_id,
             name: menu.name,
             quantity: menu.quantity,
             price: menu.price,
@@ -227,22 +229,33 @@ const OrdersPage = () => {
               }
 
               if (flag) {
+                // console.log("Combine Items", combinedItems[itemIndex])
                 flag = false;
-                let itemPrevNumber = -1;
-                for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
-                  if (k === 0) {
-                    itemPrevNumber = combinedItems[itemIndex].orderOptions[combinedItems[itemIndex].orderOptions.length - 1].itemNumber + 1
+                if (combinedItems[itemIndex].orderOptions.length <= 0) {
+                  for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
+                    formattedOrders[i].items[j].orderOptions[k].itemNumber = 1;
                   }
-                  formattedOrders[i].items[j].orderOptions[k].itemNumber = itemPrevNumber;
-                  combinedItems[itemIndex].orderOptions.push(formattedOrders[i].items[j].orderOptions[k]);
+
+                  combinedItems[itemIndex].orderOptions.push(...formattedOrders[i].items[j].orderOptions);
+                } else {
+                  let prevItemIndex = (combinedItems[itemIndex].orderOptions[combinedItems[itemIndex].orderOptions.length - 1].itemNumber) + 1;
+                  for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
+                    formattedOrders[i].items[j].orderOptions[k].itemNumber = prevItemIndex;
+                  }
+
+                  combinedItems[itemIndex].orderOptions.push(...formattedOrders[i].items[j].orderOptions);
                 }
+
               } else {
+                // console.log(formattedOrders[i].items[j]);
+
                 for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
                   formattedOrders[i].items[j].orderOptions[k].itemNumber = 1;
                 }
                 combinedItems.push(formattedOrders[i].items[j]);
               }
             }
+            console.log("combinedItems", combinedItems);
             formattedOrders[i].items = combinedItems;
           }
         }
