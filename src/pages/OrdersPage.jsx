@@ -77,7 +77,6 @@ const OrdersPage = () => {
 
       socket.on('order', async (data) => {
         handleSnackbarOpen("New order received!");
-        console.log("Data", data);
         await notificationAudio.play().catch((error) => {
           console.error("Error playing notification sound:", error);
         });

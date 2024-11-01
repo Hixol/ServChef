@@ -101,7 +101,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   };
 
   const handleTouchStart = (item, listName, e) => {
-    e.preventDefault();
     const touch = e.touches[0];
     const itemElement = itemRefs.current[item.id];
 
