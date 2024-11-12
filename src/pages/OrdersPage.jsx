@@ -213,6 +213,8 @@ const OrdersPage = () => {
         // }
         // } //this will combine the sub variants, at the moment only main items are combining but not the variants.
 
+        // console.log("Comments", formattedOrders);
+
         if (combine_items) {
           for (let i = 0; i < formattedOrders.length; i++) {
             let combinedItems = [];
@@ -228,7 +230,6 @@ const OrdersPage = () => {
               }
 
               if (flag) {
-                // console.log("Combine Items", combinedItems[itemIndex])
                 flag = false;
                 if (combinedItems[itemIndex].orderOptions.length <= 0) {
                   for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
@@ -245,20 +246,33 @@ const OrdersPage = () => {
                   combinedItems[itemIndex].orderOptions.push(...formattedOrders[i].items[j].orderOptions);
                 }
 
-              } else {
-                // console.log(formattedOrders[i].items[j]);
+                if (!formattedOrders[i].items[j].comments) {
+                  formattedOrders[i].items[j].comments = [];
+                }
+                if (formattedOrders[i].items[j].comment && formattedOrders[i].items[j].comment !== "") {
+                  combinedItems[itemIndex].comments.push(formattedOrders[i].items[j].comment);
+                }
+                delete formattedOrders[i].items[j].comment;
 
+              } else {
                 for (let k = 0; k < formattedOrders[i].items[j].orderOptions.length; k++) {
                   formattedOrders[i].items[j].orderOptions[k].itemNumber = 1;
                 }
+
+                if (!formattedOrders[i].items[j].comments) {
+                  formattedOrders[i].items[j].comments = [];
+                }
+                if (formattedOrders[i].items[j].comment && formattedOrders[i].items[j].comment !== "") {
+                  formattedOrders[i].items[j].comments.push(formattedOrders[i].items[j].comment);
+                }
                 combinedItems.push(formattedOrders[i].items[j]);
+                delete formattedOrders[i].items[j].comment;
               }
             }
             formattedOrders[i].items = combinedItems;
           }
         }
 
-        // console.log("Formatted Orders", formattedOrders);
         setOrders(formattedOrders);
       } else {
         setOrders([]);

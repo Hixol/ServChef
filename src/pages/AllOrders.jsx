@@ -5,7 +5,7 @@ import ChefService from "../services/ChefService";
 import LocationService from "../services/LocationService";
 import {useAuthContext} from "../context/authContext";
 import dayjs from "dayjs";
-import {blue, brown, green, lime, orange, pink, purple, red, teal, yellow} from "@mui/material/colors"; // Impoting CSS module
+import {blue, brown, green, grey, lime, orange, pink, purple, red, teal, yellow} from "@mui/material/colors"; // Impoting CSS module
 
 // Component for displaying all orders based on status
 
@@ -119,7 +119,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
   const handleTouchMove = (e) => {
     if (!isDragging || !draggedItem) return;
 
-    e.preventDefault(); // Prevent default touch behavior
+    // e.preventDefault(); // Prevent default touch behavior
     const touch = e.touches[0];
     const draggedElement = itemRefs.current[draggedItem.id];
 
@@ -266,7 +266,7 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
 
                       {order.items.map((item, index) => (
                           <>
-                            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem'}} key={index}>
+                            <Stack direction='row' sx={{alignItems: 'center', justifyContent: 'space-between', padding: '0.25rem 0.25rem 0 0.25rem'}} key={index}>
                               <Typography variant="subtitle2" fontWeight={600} sx={{color: getColor(listName)}}>{item.name}</Typography>
                               {((newRole === 'kitchen_manager' && item.menu_type === 'kitchen') || (newRole === 'bar_manager' && item.menu_type === 'bar') || (newRole === 'dessert_manager' && item.menu_type === 'dessert')) &&
                                   <Stack>
@@ -287,6 +287,15 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                                 //   ) uncomment this and upper line to show total item options
                               }
                             </Stack>
+                            {item.comments && item.comments.length > 0 &&
+                                <Stack sx={{padding: '0 0.5rem 0.25rem 0.5rem'}}>
+                                  {item.comments.map((comment, commentIndex) => (
+                                      <Typography key={commentIndex} variant="body2" sx={{fontSize: '0.75rem', color: grey[600]}}>
+                                        {comment}
+                                      </Typography>
+                                  ))}
+                                </Stack>
+                            }
                             <Divider />
                             <Stack direction='row'>
                               {item.orderOptions.length > 0 &&
@@ -315,14 +324,6 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                               }
                             </Stack>
                             <Divider />
-                            <Box className={`${styles.commentContainer}`}>
-                              <Typography
-                                  variant="subtitle2"
-                                  sx={{ fontWeight: "bold" }}
-                              >
-                                {item?.comment}
-                              </Typography>
-                            </Box>
                           </>
                       ))}
                     </Card>
