@@ -149,6 +149,7 @@ const OrdersPage = () => {
           order_tax: row.order_tax,
           order_type:row.order_type,
           order_time: row.order_time,
+          owner_name: (row.order_type === 'delivery' || row.order_type === 'takeaway') ? row?.owner?.name || "" : "",
           status: row.PrinterStatus ? row.PrinterStatus[newRole] : null,
           items: row.OrderMenus.map((menu) => ({
             id: menu.menu_id,

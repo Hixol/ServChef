@@ -248,13 +248,23 @@ const AllOrders = ({ orders, setOrders, setIsUpdating, fetchData, newRole}) => {
                     >
                       <Box className={`${styles.orderDetails} ${getStatusColor(listName)}`}>
                         {/* <Typography>{order?.table_name}</Typography> */}
-                        <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
-                          {order?.table_name
-                              ? order.table_name
-                              : order?.order_type
-                                  ? order.order_type
-                                  : null}
-                        </Typography>
+                        {(order.order_type === 'takeaway' || order.order_type === 'delivery') ?
+                            <Stack>
+                              <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
+                                {order?.order_type === 'takeaway' ? "Takeaway" : "Delivery"}
+                              </Typography>
+                              <Typography vairant='h6' sx={{fontSize: '0.8rem'}}>
+                                {order?.id ? order.id : ""}
+                              </Typography>
+                              <Typography variant="subtitle2" sx={{fontSize: '0.8rem'}}>
+                                {order.owner_name ? order.owner_name : "Walk in"}
+                              </Typography>
+                            </Stack>
+                            :
+                            <Typography fontWeight={600} sx={{textTransform: 'capitalize'}}>
+                              {order?.table_name ? order.table_name : ""}
+                            </Typography>
+                        }
 
                         <Stack sx={{alignItems: 'center', justifyContent: 'center', textAlign: 'center'}}>
                           <Typography variant='h6' sx={{fontSize: '0.7rem'}}>{dayjs(order.order_date).format('ddd, MMM D, YYYY')}</Typography>
